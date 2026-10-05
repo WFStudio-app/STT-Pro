@@ -1,8 +1,5 @@
-# Python compiled files
 __pycache__/
-*.pycnode_modules/
-.next/
-dist/
-build/
+*.pyc
+logs/
 *.log
-node_modules/
+monitor.out
