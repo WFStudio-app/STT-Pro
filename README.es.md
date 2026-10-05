@@ -189,3 +189,20 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 ## Licencia 📄
 
 [MIT](LICENSE) © 2026 WFStudio-app
+
+
+## 🔎 Campos detallados (v1.4.0)
+
+Cada registro completo (`N open-list`) empieza con el bloque **CAMPOS DETALLADOS**:
+
+| Campo | Significado |
+|---|---|
+| `DNS:` | desde qué servidor DNS llegan las respuestas (stub local ⇒ posible ocultación DoH/DoT) |
+| `VPN?:` | ¿tráfico oculto tras un túnel? (tun/tap/wg/ppp, puertos VPN, ruta por defecto vía túnel) |
+| `DISPOSITIVO DE ORIGEN:` | dispositivo que emitió la señal — MAC + fabricante OUI y **detección de controladores** (Flipper Zero, HackRF, WiFi Pineapple, ESP32/Marauder, Rubber Ducky…) |
+| `SO?:` | sistema operativo del origen si está disponible (kernel local + huella TTL de la puerta de enlace) |
+
+## 📦 Nuevos módulos (v1.4.0)
+
+Nuevos comandos: `stats` · `export json|csv|html` · `search <texto|regex>` · `config`
+Capas nuevas: `eyes/analysis/` (fingerprint, anomalías, línea base) y `eyes/output/` (exportadores, estadísticas, rotación), además de `wifi`, `bandwidth`, `ports`, `dns_watch`, `vpn`, `device` en `eyes/modules/` y `config`/`search` en `eyes/utils/`.

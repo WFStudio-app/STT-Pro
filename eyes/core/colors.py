@@ -34,6 +34,12 @@ CATEGORY_COLOR = {
     "own": C.PURPLE,
 }
 
+# category -> CSS-friendly name (used by HTML exporter)
+CATEGORY_COLOR_NAME = {
+    "success": "success", "warning": "warning", "error": "error",
+    "masked": "masked", "own": "own",
+}
+
 # OUI prefixes commonly used by randomized / private MAC addresses
 PRIVATE_MAC_OUI = {
     "96:00", "da:0b", "e6:ec", "f6:a9", "76:cf", "3a:52", "22:e7", "ba:8c",

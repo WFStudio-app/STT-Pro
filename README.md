@@ -189,3 +189,36 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 ## License 📄
 
 [MIT](LICENSE) © 2026 WFStudio-app
+
+
+## 🔎 Detailed Fields (v1.4.0)
+
+Every full log (`N open-list`) starts with a **DETAIL FIELDS** block:
+
+| Field | Meaning |
+|---|---|
+| `DNS:` | which DNS server the answers come from (local stub ⇒ possible DoH/DoT masking) |
+| `VPN?:` | is traffic hidden behind a tunnel (tun/tap/wg/ppp, VPN ports, default route via tunnel) |
+| `SOURCE DEVICE:` | device that emitted the signal — MAC + OUI vendor, plus **controller-board detection** (Flipper Zero, HackRF, WiFi Pineapple, ESP32/Marauder, Rubber Ducky…) |
+| `OS?:` | operating system of the origin if available (local kernel + TTL fingerprint of the gateway) |
+
+## 📦 New Modules (v1.4.0)
+
+```
+eyes/modules/   wifi.py        SSID / BSSID / channel / RSSI / 802.11 standard
+                bandwidth.py   live RX/TX speed per interface
+                ports.py       listening-socket audit (/proc/net)
+                dns_watch.py   direct probe of every configured resolver
+                vpn.py         tunnel & hidden-traffic detector
+                device.py      OUI vendors, controller signatures, TTL→OS
+eyes/analysis/  fingerprint.py neighbor OS guesses
+                anomalies.py   port-scan / connection-flood heuristics
+                baseline.py    learned network profile, ARP-spoof drift alerts
+eyes/output/    exporter.py    JSON / CSV / HTML reports
+                stats.py       session statistics per log color
+                rotate.py      log rotation (2 MB × 3 files)
+eyes/utils/     config.py      persistent config.json
+                search.py      regex search over all logs
+```
+
+New commands: `stats` · `export json|csv|html` · `search <text|regex>` · `config`

@@ -16,12 +16,17 @@ IP_FILTER = {"nets": []}   # list of ipaddress networks (empty = no filter)
 # Patterns that decide the category of a log line
 _ERROR_PAT = re.compile(
     r"\b(failed|failure|error|unreachable|timeout|timed out|blocked|denied|"
-    r"refused|down|no response|100% packet loss)\b", re.I)
+    r"refused|down|no response|100% packet loss|query failed)\b", re.I)
 _WARN_PAT = re.compile(
     r"\b(suspicious|unknown|anonym|promisc|spoof|dup(licate)? address|"
-    r"high port|unexpected|lost|partial|risk)\b", re.I)
+    r"high port|unexpected|lost|partial|risk|weak signal|arp spoof|"
+    r"port-scan|connection flood|changed|disappeared|controller|"
+    r"flipper|hackrf|pineapple|marauder|rubber ducky|teensy|"
+    r"bound to all interfaces|high traffic)\b", re.I)
 _MASKED_PAT = re.compile(
-    r"\b(masked|hidden|private|randomized|tunnel|vpn|proxy|obfuscat)\b", re.I)
+    r"\b(masked|hidden|private|randomized|tunnel|vpn|proxy|obfuscat|"
+    r"doh|dot|wireguard|openvpn|ipsec|l2tp|pptp|pppoe|"
+    r"stub resolver|traffic is vpn-routed)\b", re.I)
 _OWN_PAT = re.compile(
     r"\b(loopback|lo\b|localhost|own network|your network)\b", re.I)
 
