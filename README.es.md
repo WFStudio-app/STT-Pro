@@ -2,7 +2,7 @@
 
 > [EN](README.md) · **ES**
 
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-1.1.0-blue)](#-algoritmo-de-actualización)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-1.2.0-blue)](#-algoritmo-de-actualización)
 [![Plataforma](https://img.shields.io/badge/plataforma-Linux-FCC624?logo=linux&logoColor=black)]()
 [![Python](https://img.shields.io/badge/python-3.6+-3776AB?logo=python&logoColor=white)]()
 [![Licencia](https://img.shields.io/badge/licencia-MIT-green)](LICENSE)
@@ -41,7 +41,10 @@ TCP/UDP activas y comprobaciones de alcance — y guarda cada instantánea como 
 - 🏓 **Comprobación de alcance** — ping a la puerta de enlace y DNS externo con estadísticas RTT
 - 🔢 **Registros numerados** impresos en detalle directamente en el terminal
 - 📂 Cada registro también se guarda en `logs/session.log` (a prueba de pérdidas del búfer)
-- 🕘 **Escaneo periódico automático** cada 60 segundos (en subproceso en segundo plano)
+- 🖼️ **Ventana de comandos** — un panel elegante con marco que muestra todos los comandos al iniciar
+- ⏱️ **Actualizaciones en vivo** — los registros se refrescan automáticamente **cada segundo** por defecto; cámbialo con `/updtime [seg]`
+- 🎨 **Registros por colores**: 🟢 éxito · 🟡 sospechoso · 🔴 bloqueado/fallido · 🟠 enmascarado · 🟣 tu propia red
+- 📌 **Filtro IP** — `/setip 192.168.1.0/24` mantiene solo los registros que coinciden con una IP o red (`/setip off` lo desactiva)
 - 🔎 `N open-list` — reabre al instante el **registro mega-detallado completo #N**
 - 🌍 Interfaz bilingüe: **English** y **Español**
 
@@ -68,27 +71,31 @@ python3 net_monitor.py --lang es
 python3 net_monitor.py
 ```
 
-En la primera ejecución el monitor captura inmediatamente el **registro #1** y lo
-imprime en máximo detalle en el terminal; luego sigue escaneando cada 60 s.
-Escribe comandos en el indicador `>`.
+Al iniciar aparece una **ventana de comandos con marco** que lista todas las órdenes;
+luego el monitor captura el **registro #1** y sigue refrescando los registros **cada
+segundo** automáticamente. Usa `/updtime 5` para reducir la frecuencia o
+`/setip 192.168.1.0/24` para vigilar solo una red. Escribe comandos en el indicador `>`.
 
 ## Comandos 🖥️
 
 | Comando | Descripción |
 |---|---|
 | `scan` | capturar ahora una nueva instantánea de red |
+| `/updtime [seg]` | intervalo de actualización en segundos (por defecto `1`, mínimo `0.5`) |
+| `/setip [ip\|cidr]` | filtrar por IP o red, p. ej. `/setip 192.168.1.7` o `/setip 10.0.0.0/8`; `/setip off` desactiva |
 | `list` | lista numerada de todos los registros capturados |
 | `N open-list` | abrir el **registro detallado completo** número N (p. ej. `3 open-list`) |
 | `version` | versión del programa + algoritmo de actualización |
 | `clear` | limpiar el historial de registros en memoria |
+| `banner` | mostrar la ventana de comandos otra vez |
 | `help` | mostrar ayuda |
 | `quit` / `Ctrl+C` | salir |
 
 ## Ejemplo de salida 🧾
 
 ```
-===== LOG #1 | 2026-10-05 14:22:31 =====
-Eyes of the Network v1.1.0 | lang=es
+===== LOG #1 | 2026-10-05 14:22:31 | [ÉXITO] =====
+Eyes of the Network v1.2.0 | lang=es
 Sistema operativo: Linux, kernel 6.8.0-45-generic
 Nombre del host: thinkpad
 
@@ -117,6 +124,8 @@ ESTAB  0      0      192.168.1.42:44312  140.82.121.4:443   users:(("chrome",pid
 ping 192.168.1.1: OK (recibidos=3/3, RTT medio=1.24 ms)
 ping 8.8.8.8: OK (recibidos=3/3, RTT medio=9.87 ms)
 ```
+> Cada línea se pinta por categoría: 🟢 funcionamiento/exito · 🟣 red local propia
+> · 🟡 entradas sospechosas · 🟠 MACs enmascaradas/privadas · 🔴 comprobaciones fallidas o bloqueadas.
 
 ## Idiomas 🌐
 
@@ -138,7 +147,7 @@ Las versiones siguen el formato **`X.X.X` (MAYOR.MENOR.PARCHE)**:
 | `0.0.X` | 🔧 **Mini actualización** | correcciones, mejoras pequeñas |
 
 Ejemplo de flujo: `1.0.0 → 1.0.1` (corrección) `→ 1.1.0` (nueva función) `→ 2.0.0` (reescritura global).
-Versión actual: **1.1.0** — consulta la [página de lanzamientos](../../releases).
+Versión actual: **1.2.0** — consulta la [página de lanzamientos](../../releases).
 
 ## FAQ ❓
 
@@ -149,7 +158,9 @@ Los registros nunca se suben a git (ver `.gitignore`).
 
 **¿Por qué la sección ARP dice "unavailable"?** El contenedor/VM puede carecer de `ip neigh` o de una LAN real. En un host Linux normal funciona sin configuración adicional.
 
-**¿Cómo detengo los escaneos periódicos?** Pulsa `Ctrl+C` o escribe `quit`.
+**¿Cómo detengo las actualizaciones en vivo?** Escribe `quit` (detiene el subproceso de registro limpiamente).
+
+**¿Puedo desactivar los colores?** Sí — ejecuta sin TTY o exporta `NO_COLOR=1`.
 
 ## Seguridad y ética 🔐
 

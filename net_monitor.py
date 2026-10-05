@@ -8,6 +8,9 @@ gateway/DNS reachability), logs everything with numbered detailed entries in
 the terminal, and lets you open any log with the command:  <number> open-list
 All logs are also saved to logs/session.log.
 
+On startup a beautifully formatted command window (banner) is shown, then
+live log updates begin automatically (default interval: 1 second).
+
 Versioning scheme (SemVer-like):
     MAJOR.MINOR.PATCH
       MAJOR (X.0.0) -> Global update        (breaking changes / full rewrite)
@@ -17,15 +20,20 @@ Versioning scheme (SemVer-like):
 Usage:      python3 net_monitor.py            (English, default)
             python3 net_monitor.py --lang es  (Spanish)
 Stop:       Ctrl+C
-Commands:   N open-list  — show full log #N
-            list         — list all logs
-            version      — current version + update algorithm
-            help         — help
-            quit         — exit
+Commands:   N open-list     — show full log #N
+            list            — list all logs
+            /updtime [sec]  — set log update interval (seconds)
+            /setip [ip|cidr]— filter logs by IP or network (e.g. 192.168.1.7
+                              or 192.168.1.0/24); '/setip off' disables
+            version         — current version + update algorithm
+            help | banner   — show the command window again
+            quit            — exit
 """
 
+import ipaddress
 import os
 import re
+import shutil
 import sys
 import socket
 import subprocess
@@ -36,7 +44,7 @@ from datetime import datetime
 # Version & update algorithm
 # ----------------------------------------------------------------------
 VERSION_MAJOR = 1   # X.0.0 — Global update
-VERSION_MINOR = 1   # 0.X.0 — Major feature update
+VERSION_MINOR = 2   # 0.X.0 — Major feature update
 VERSION_PATCH = 0   # 0.0.X — Mini update (patch)
 VERSION = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
 
@@ -63,7 +71,7 @@ if LANG not in ("en", "es"):
 T = {
     "en": {
         "title": "Eyes of the Network — Linux network monitor",
-        "started": "Monitor started. Commands: scan | list | N open-list | version | clear | help | quit",
+        "started": "Monitor started — live updates every {interval}s.",
         "iface_header": "NETWORK INTERFACES",
         "addresses": "IP addresses",
         "mac": "MAC address",
@@ -76,26 +84,37 @@ T = {
         "default_gw": "Default gateway",
         "hostname": "Hostname",
         "os_info": "Operating system",
-        "periodic": "Periodic scan finished",
         "log_saved": "Full log saved to file:",
         "not_found": "Log not found",
         "total_logs": "Total logs",
-        "help_text": (
-            "Commands:\n"
-            "  scan          — capture a new network snapshot\n"
-            "  list          — numbered list of all captured logs\n"
-            "  N open-list   — open the FULL detailed log number N\n"
-            "  version       — program version and update algorithm\n"
-            "  clear         — clear log history in memory\n"
-            "  help          — this help\n"
-            "  quit          — exit\n"
-        ),
         "exit": "Exiting. Goodbye!",
         "up": "UP", "down": "DOWN",
+        "filter_on": "IP filter active",
+        "filter_off": "IP filter disabled — showing all logs",
+        "filter_bad": "Invalid IP/network. Example: /setip 192.168.1.7 or /setip 192.168.1.0/24",
+        "updtime_set": "Log update interval set to",
+        "updtime_bad": "Usage: /updtime <seconds>  (min 0.5s). Example: /updtime 5",
+        "skipped": "Log skipped (does not match IP filter)",
+        "sec": "second(s)",
+        "categories": {
+            "success": "SUCCESS", "warning": "SUSPICIOUS", "error": "BLOCKED/FAILED",
+            "masked": "MASKED", "own": "OWN NETWORK",
+        },
+        "banner_commands": [
+            ("/updtime [sec]",   "set log refresh interval (default 1s)"),
+            ("/setip [ip|cidr]", "filter logs by IP or network ('off' to clear)"),
+            ("scan",             "capture a new snapshot right now"),
+            ("list",             "numbered list of all captured logs"),
+            ("N open-list",      "open the FULL detailed log number N"),
+            ("version",          "program version + update algorithm"),
+            ("clear",            "clear log history in memory"),
+            ("banner",           "show this command window again"),
+            ("quit",             "exit"),
+        ],
     },
     "es": {
         "title": "Eyes of the Network — Monitor de red para Linux",
-        "started": "Monitor iniciado. Comandos: scan | list | N open-list | version | clear | help | quit",
+        "started": "Monitor iniciado — actualizaciones cada {interval}s.",
         "iface_header": "INTERFACES DE RED",
         "addresses": "Direcciones IP",
         "mac": "Dirección MAC",
@@ -108,22 +127,33 @@ T = {
         "default_gw": "Puerta de enlace predeterminada",
         "hostname": "Nombre del host",
         "os_info": "Sistema operativo",
-        "periodic": "Escaneo periódico finalizado",
         "log_saved": "Registro completo guardado en archivo:",
         "not_found": "Registro no encontrado",
         "total_logs": "Registros totales",
-        "help_text": (
-            "Comandos:\n"
-            "  scan          — capturar una nueva instantánea de red\n"
-            "  list          — lista numerada de todos los registros\n"
-            "  N open-list   — abrir el registro COMPLETO y detallado número N\n"
-            "  version       — versión del programa y algoritmo de actualización\n"
-            "  clear         — limpiar el historial en memoria\n"
-            "  help          — esta ayuda\n"
-            "  quit          — salir\n"
-        ),
         "exit": "Saliendo. ¡Adiós!",
         "up": "ACTIVA", "down": "INACTIVA",
+        "filter_on": "Filtro IP activo",
+        "filter_off": "Filtro IP desactivado — mostrando todos los registros",
+        "filter_bad": "IP/red inválida. Ejemplo: /setip 192.168.1.7 o /setip 192.168.1.0/24",
+        "updtime_set": "Intervalo de actualización ajustado a",
+        "updtime_bad": "Uso: /updtime <segundos>  (mín 0.5s). Ejemplo: /updtime 5",
+        "skipped": "Registro omitido (no coincide con el filtro IP)",
+        "sec": "segundo(s)",
+        "categories": {
+            "success": "ÉXITO", "warning": "SOSPECHOSO", "error": "BLOQUEADO/FALLIDO",
+            "masked": "ENMASCARADO", "own": "RED PROPIA",
+        },
+        "banner_commands": [
+            ("/updtime [seg]",   "intervalo de refresco (por defecto 1s)"),
+            ("/setip [ip|cidr]", "filtrar por IP o red ('off' para limpiar)"),
+            ("scan",             "capturar una nueva instantánea ahora"),
+            ("list",             "lista numerada de todos los registros"),
+            ("N open-list",      "abrir el registro COMPLETO número N"),
+            ("version",          "versión + algoritmo de actualización"),
+            ("clear",            "limpiar el historial en memoria"),
+            ("banner",           "mostrar esta ventana otra vez"),
+            ("quit",             "salir"),
+        ],
     },
 }
 TR = T[LANG]
@@ -131,29 +161,84 @@ TR = T[LANG]
 LOG_DIR = "logs"
 LOG_FILE = os.path.join(LOG_DIR, "session.log")
 
+# ----------------------------------------------------------------------
+# Colors & log categories
+#   GREEN    success logs
+#   YELLOW   suspicious logs
+#   RED      blocked / failed / unreachable logs
+#   ORANGE   masked logs (private MAC / hidden traffic)
+#   PURPLE   your own network (local / loopback / link-local)
+# ----------------------------------------------------------------------
+class C:
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    ORANGE = "\033[38;5;208m"
+    PURPLE = "\033[35m"
+    BLUE = "\033[94m"
+
+CATEGORY_COLOR = {
+    "success": C.GREEN,
+    "warning": C.YELLOW,
+    "error": C.RED,
+    "masked": C.ORANGE,
+    "own": C.PURPLE,
+}
+
+PRIVATE_MAC_OUI = {
+    "96:00", "da:0b", "e6:ec", "f6:a9", "76:cf", "3a:52", "22:e7", "ba:8c",
+    "02:42", "00:05:50", "fe:ff",
+}
+
+
+def color_enabled():
+    return sys.stdout.isatty() and os.environ.get("NO_COLOR") is None
+
+
+USE_COLOR = color_enabled()
+
+
+def paint(text, color):
+    if not USE_COLOR or not color:
+        return text
+    return f"{color}{text}{C.RESET}"
+
+
+def strip_ansi(text):
+    return re.sub(r"\033\[[0-9;]*m", "", text)
+
 
 # ----------------------------------------------------------------------
 # Log storage
 # ----------------------------------------------------------------------
 class LogStore:
     def __init__(self):
-        self.entries = {}          # number -> text
+        self.entries = {}          # number -> (text, category)
         self.counter = 0
         self.lock = threading.Lock()
         os.makedirs(LOG_DIR, exist_ok=True)
 
-    def add(self, text):
+    def add(self, text, category="success"):
+        """Add a numbered log entry. Returns number or None if filtered out."""
         with self.lock:
             self.counter += 1
             n = self.counter
-            self.entries[n] = text
+            self.entries[n] = (text, category)
         stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        header = f"===== LOG #{n} | {stamp} ====="
-        full = header + "\n" + text + "\n"
-        print(full)
+        cat_label = TR["categories"][category]
+        header = f"===== LOG #{n} | {stamp} | [{cat_label}] ====="
+        colored_header = paint(header, CATEGORY_COLOR[category] + C.BOLD
+                               if USE_COLOR else "")
+        body_colored = colorize_log(text)
+        print(colored_header)
+        print(body_colored)
         sys.stdout.flush()
         with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(full + "\n")
+            f.write(strip_ansi(header + "\n" + text + "\n\n"))
         return n
 
     def get(self, n):
@@ -162,10 +247,13 @@ class LogStore:
     def listing(self):
         with self.lock:
             keys = sorted(self.entries.keys())
-        lines = [f"{TR['total_logs']}: {len(keys)}"]
+        lines = [paint(f"{TR['total_logs']}: {len(keys)}", C.CYAN)]
         for k in keys:
-            first = self.entries[k].strip().splitlines()[0] if self.entries[k] else ""
-            lines.append(f"  #{k}: {first[:70]}")
+            text, cat = self.entries[k]
+            first = text.strip().splitlines()[0] if text else ""
+            label = TR["categories"][cat][:4]
+            lines.append(paint(f"  #{k} [{label:^10}]", CATEGORY_COLOR[cat])
+                         + f" {first[:60]}")
         return "\n".join(lines)
 
     def clear(self):
@@ -175,7 +263,168 @@ class LogStore:
 
 store = LogStore()
 
+# ----------------------------------------------------------------------
+# IP filter  (/setip)
+# ----------------------------------------------------------------------
+IP_FILTER = {"nets": []}   # list of ipaddress networks
 
+
+def parse_filter(spec):
+    """Parse '192.168.1.7', '192.168.1.0/24' or 'off'. True=ok, False=bad."""
+    global IP_FILTER
+    if spec.lower() in ("off", "none", "all", "reset"):
+        IP_FILTER["nets"] = []
+        return True
+    try:
+        if "/" in spec:
+            net = ipaddress.ip_network(spec, strict=False)
+        else:
+            net = ipaddress.ip_network(spec + "/32", strict=False)
+        IP_FILTER["nets"] = [net]
+        return True
+    except ValueError:
+        return False
+
+
+def matches_ip_filter(text):
+    """True if any IP inside the log falls into the configured network."""
+    nets = IP_FILTER["nets"]
+    if not nets:
+        return True
+    for ip in re.findall(r"\b(?:\d{1,3}\.){3}\d{1,3}\b|\b[0-9a-fA-F:]+:[0-9a-fA-F:]+\b", text):
+        try:
+            addr = ipaddress.ip_address(ip)
+        except ValueError:
+            continue
+        for net in nets:
+            if addr.version == net.version and addr in net:
+                return True
+    return False
+
+
+def own_ips():
+    """All IPs assigned to this machine."""
+    ips = set()
+    out = run(["ip", "-br", "addr", "show"])
+    for row in out.splitlines():
+        parts = row.split()
+        if len(parts) >= 3:
+            ips.add(parts[2].split("/")[0])
+    return ips
+
+
+# ----------------------------------------------------------------------
+# Classification & per-line colorization
+# ----------------------------------------------------------------------
+def classify_line(line, ctx):
+    low = line.lower()
+    # RED — blocked / failed / didn't reach
+    if any(k in low for k in ("fail", "blocked", "denied", "unreachable",
+                              "refused", "timeout", "timed out", "no route",
+                              "permits", " ! ", "offline", "down")) \
+            or "FAIL" in line:
+        return "error"
+    # PURPLE — own network (local/loopback/link-local/machine's own IPs)
+    if any(k in low for k in ("lo ", "loopback", "::1", "127.0.0.",
+                              "10.", "172.16.", "192.168.", "169.254.",
+                              "fe80", "myself", "own")):
+        return "own"
+    # ORANGE — masked (locally-administered/private MAC, hidden/anonymized)
+    m = re.search(r"([0-9a-f]{2}:){5}[0-9a-f]{2}", low)
+    if m:
+        mac = m.group(0)
+        if mac[0] in "26ea" and mac[1] in "26ae":  # locally administered bit
+            return "masked"
+        if any(mac.startswith(p) for p in PRIVATE_MAC_OUI):
+            return "masked"
+    if any(k in low for k in ("hidden", "masked", "anonym", "random",
+                              "private", "tunnel", "obfusc")):
+        return "masked"
+    # YELLOW — suspicious
+    if any(k in low for k in ("suspicious", "unknown", "incomplete", "stale",
+                              "probe", "scan", "port ", "promisc", "duplicate",
+                              "retrans", "lost", "% packet loss")):
+        return "warning"
+    # GREEN — success
+    if any(k in low for k in ("ok", "up", "established", "received", "active",
+                              "assigned", "reachable", "connected", "online")):
+        return "success"
+    return ctx.default
+
+
+def colorize_log(text, default="success"):
+    """Return text with each line painted by its category."""
+    class _Ctx:
+        pass
+    ctx = _Ctx()
+    ctx.default = default
+    out_lines = []
+    for line in text.splitlines():
+        cat = classify_line(line, ctx)
+        out_lines.append(paint(line, CATEGORY_COLOR[cat]))
+    return "\n".join(out_lines)
+
+
+def categorize_full(text):
+    """Overall category of a log = worst thing found inside it."""
+    class _Ctx:
+        default = "success"
+    ctx = _Ctx()
+    order = ["success", "own", "warning", "masked", "error"]
+    worst = "success"
+    for line in text.splitlines():
+        cat = classify_line(line, ctx)
+        if order.index(cat) > order.index(worst):
+            worst = cat
+    return worst
+
+
+# ----------------------------------------------------------------------
+# Banner — beautiful command window shown at startup
+# ----------------------------------------------------------------------
+def show_banner():
+    width = min(shutil.get_terminal_size((78, 24)).columns, 78)
+    inner = width - 4
+    cmds = TR["banner_commands"]
+    cmd_w = max(len(c) for c, _ in cmds) + 2
+
+    def hline(l, m, r):
+        return l + m * (width - 2) + r
+
+    eye = [
+        r"  ______                    __        __   _                  ",
+        r" |  ____|                   \ \      / /  | |                 ",
+        r" | |__   ___  ___ _   _  ___ \ \ /\ / /_ _| |_ ___  _ __ ___ ",
+        r" |  __| / _ \/ __| | | |/ __| \ V  V / _` | __/ _ \| '__/ _ \\",
+        r" | |___| (_) \__ \ |_| |\__ \  \ /\ / (_| | || (_) | | |  __/",
+        r" |______\___/|___/\__,_||___/   V  V \__,_|\__\___/|_|  \___|",
+    ]
+    print(paint("\n".join(eye), C.CYAN + C.BOLD))
+    print(paint(hline("╔", "═", "╗").center(width), C.BLUE))
+    title = f" v{VERSION}  |  {TR['title']}  |  lang={LANG.upper()} "
+    print(paint(("║" + title.center(inner) + "║"), C.BLUE))
+    print(paint(hline("╠", "═", "╣").center(width), C.BLUE))
+    legend = " ".join(
+        paint(f"■ {TR['categories'][k]}", CATEGORY_COLOR[k])
+        for k in ("success", "own", "warning", "masked", "error"))
+    print(paint("║ ", C.BLUE) + legend + paint(" " * max(0, inner - len(strip_ansi(legend)) - 1) + "║", C.BLUE))
+    print(paint(hline("╠", "─", "╣").center(width), C.BLUE))
+    print(paint("║  " + "COMMANDS:".ljust(inner - 2) + "║", C.BLUE))
+    print(paint(hline("╠", "─", "╣").center(width), C.BLUE))
+    for cmd, desc in cmds:
+        left = paint(" " + cmd, C.BOLD + C.CYAN).ljust(cmd_w + len(paint("", "")))
+        # pad without counting ANSI
+        left_plain = (" " + cmd).ljust(cmd_w)
+        row = "  " + paint(left_plain, C.BOLD + C.CYAN) + " " + paint(desc, C.DIM)
+        print(paint("║", C.BLUE) + row.ljust(inner) + paint("║", C.BLUE))
+    print(paint(hline("╚", "═", "╝").center(width), C.BLUE))
+    print(paint(TR["started"].format(interval=LIVE["interval"]), C.GREEN)
+          + "  " + paint("(Ctrl+C to stop logging thread)", C.DIM))
+
+
+# ----------------------------------------------------------------------
+# Command helpers
+# ----------------------------------------------------------------------
 def run(cmd_list):
     """Run a shell command, return stdout text ('' on failure)."""
     try:
@@ -301,61 +550,118 @@ def build_full_log():
 
 
 # ----------------------------------------------------------------------
+# Live update thread  (default: every 1 second)
+# ----------------------------------------------------------------------
+LIVE = {"interval": 1.0, "enabled": True}
+
+
+def add_log(text):
+    """Filter + store one log. Returns number or None."""
+    if not matches_ip_filter(text):
+        return None
+    cat = categorize_full(text)
+    return store.add(text, cat)
+
+
+def live_loop(stop_event):
+    while not stop_event.is_set():
+        if LIVE["enabled"]:
+            try:
+                add_log(build_full_log())
+            except Exception as e:
+                print(paint(f"live scan error: {e}", C.RED))
+        # sleep in small steps so /updtime takes effect quickly
+        waited = 0.0
+        step = 0.25
+        while waited < LIVE["interval"] and not stop_event.is_set():
+            stop_event.wait(step)
+            waited += step
+
+
+# ----------------------------------------------------------------------
 # Main loop
 # ----------------------------------------------------------------------
-def main():
-    print(f"\n*** {TR['title']} v{VERSION} ***")
-    print(TR["started"] + "\n")
+HELP_FALLBACK = (
+    "Commands: scan | list | N open-list | /updtime [sec] | /setip [ip|cidr] "
+    "| version | clear | banner | help | quit"
+)
 
-    store.add(build_full_log())
+
+def main():
+    show_banner()
+
+    add_log(build_full_log())
 
     stop = threading.Event()
-
-    def periodic():
-        while not stop.wait(60):
-            try:
-                store.add(build_full_log())
-                print(f"[{datetime.now():%H:%M:%S}] {TR['periodic']}")
-            except Exception as e:
-                print(f"periodic scan error: {e}")
-
-    th = threading.Thread(target=periodic, daemon=True)
+    th = threading.Thread(target=live_loop, args=(stop,), daemon=True)
     th.start()
 
     while True:
         try:
-            line = input("\n> ").strip()
+            line = input(paint("\n> ", C.BOLD)).strip()
         except (EOFError, KeyboardInterrupt):
             break
         if not line:
             continue
         low = line.lower()
-        if low in ("quit", "exit"):
+        parts = line.split()
+        cmd = parts[0].lower()
+
+        if cmd in ("quit", "exit"):
+            LIVE["enabled"] = False
+            stop.set()
             print(TR["exit"])
             break
-        elif low == "help":
-            print(TR["help_text"])
-        elif low == "list":
+        elif cmd in ("help", "?"):
+            print(TR["help_text"] if "help_text" in TR else HELP_FALLBACK)
+            show_banner()
+        elif cmd == "banner":
+            show_banner()
+        elif cmd == "list":
             print(store.listing())
-        elif low == "version":
+        elif cmd == "version":
             print(f"Eyes of the Network v{VERSION}\n{UPDATE_ALGORITHM}")
-        elif low == "clear":
+        elif cmd == "clear":
             store.clear()
-            print("OK")
-        elif low == "scan":
-            store.add(build_full_log())
+            print(paint("OK", C.GREEN))
+        elif cmd == "scan":
+            n = add_log(build_full_log())
+            if n is None:
+                print(paint(TR["skipped"], C.YELLOW))
+        elif cmd == "/updtime":
+            if len(parts) != 2:
+                print(paint(f"{TR['updtime_bad']} (current: {LIVE['interval']}s)", C.RED))
+            else:
+                try:
+                    val = float(parts[1])
+                    if val < 0.5:
+                        raise ValueError
+                    LIVE["interval"] = val
+                    print(paint(f"{TR['updtime_set']} {val:g} {TR['sec']}.", C.GREEN))
+                except ValueError:
+                    print(paint(TR["updtime_bad"], C.RED))
+        elif cmd == "/setip":
+            if len(parts) != 2:
+                print(paint(TR["filter_bad"], C.RED))
+            elif not parse_filter(parts[1]):
+                print(paint(TR["filter_bad"], C.RED))
+            elif not IP_FILTER["nets"]:
+                print(paint(TR["filter_off"], C.PURPLE))
+            else:
+                print(paint(f"{TR['filter_on']}: {IP_FILTER['nets'][0]}", C.GREEN))
         else:
             m = re.match(r"^(\d+)\s+open-list$", low)
             if m:
                 n = int(m.group(1))
                 entry = store.get(n)
                 if entry is None:
-                    print(f"{TR['not_found']}: #{n}")
+                    print(paint(f"{TR['not_found']}: #{n}", C.RED))
                 else:
-                    print(entry)
-                    print(f"\n({TR['log_saved']} {os.path.abspath(LOG_FILE)})")
+                    text, cat = entry
+                    print(colorize_log(text, cat))
+                    print(paint(f"\n({TR['log_saved']} {os.path.abspath(LOG_FILE)})", C.DIM))
             else:
-                print(TR["help_text"])
+                print(paint(HELP_FALLBACK, C.DIM))
 
     stop.set()
 

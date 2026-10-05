@@ -2,7 +2,7 @@
 
 > **EN** · [ES](README.es.md)
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue)](#-update-algorithm)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)](#-update-algorithm)
 [![Platform](https://img.shields.io/badge/platform-Linux-FCC624?logo=linux&logoColor=black)]()
 [![Python](https://img.shields.io/badge/python-3.6+-3776AB?logo=python&logoColor=white)]()
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -41,7 +41,10 @@ number: `42 open-list`. 🎯
 - 🏓 **Reachability check** — ping to gateway and external DNS with RTT stats
 - 🔢 **Numbered logs** printed in detail straight to the terminal
 - 📂 Every log also persisted to `logs/session.log` (survives scrollback loss)
-- 🕘 **Auto periodic scan** every 60 seconds (runs in background thread)
+- 🖼️ **Command window banner** — a beautiful framed panel with all commands shown on startup
+- ⏱️ **Live updates** — logs refresh automatically **every second** by default; change it with `/updtime [sec]`
+- 🎨 **Color-coded logs**: 🟢 success · 🟡 suspicious · 🔴 blocked/failed · 🟠 masked · 🟣 your own network
+- 📌 **IP filter** — `/setip 192.168.1.0/24` keeps only logs that match an IP or network (`/setip off` clears)
 - 🔎 `N open-list` — instantly reopen the **full mega-detailed log #N**
 - 🌍 Bilingual UI: **English** and **Español**
 
@@ -68,26 +71,31 @@ python3 net_monitor.py
 python3 net_monitor.py --lang es
 ```
 
-On first run the monitor immediately captures **log #1** and prints it in full
-detail to the terminal, then keeps scanning every 60 s. Type commands at the `>` prompt.
+On startup a **framed command window** appears listing every command, then the monitor
+captures **log #1** and keeps refreshing the logs **every second** automatically.
+Use `/updtime 5` to slow it down, `/setip 192.168.1.0/24` to watch only one network.
+Type commands at the `>` prompt.
 
 ## Commands 🖥️
 
 | Command | Description |
 |---|---|
 | `scan` | capture a new network snapshot now |
+| `/updtime [sec]` | set the live log update interval in seconds (default `1`, min `0.5`) |
+| `/setip [ip\|cidr]` | filter logs by IP or network, e.g. `/setip 192.168.1.7` or `/setip 10.0.0.0/8`; `/setip off` disables |
 | `list` | numbered list of all captured logs |
 | `N open-list` | open the **full detailed log** number N (e.g. `3 open-list`) |
 | `version` | program version + update algorithm |
 | `clear` | clear log history in memory |
+| `banner` | show the command window again |
 | `help` | show help |
 | `quit` / `Ctrl+C` | exit |
 
 ## Example output 🧾
 
 ```
-===== LOG #1 | 2026-10-05 14:22:31 =====
-Eyes of the Network v1.1.0 | lang=en
+===== LOG #1 | 2026-10-05 14:22:31 | [SUCCESS] =====
+Eyes of the Network v1.2.0 | lang=en
 Operating system: Linux, kernel 6.8.0-45-generic
 Hostname: thinkpad
 
@@ -116,6 +124,8 @@ ESTAB  0      0      192.168.1.42:44312  140.82.121.4:443   users:(("chrome",pid
 ping 192.168.1.1: OK (received=3/3, avg RTT=1.24 ms)
 ping 8.8.8.8: OK (received=3/3, avg RTT=9.87 ms)
 ```
+> Each line is painted by category: 🟢 working/success · 🟣 your local network
+> · 🟡 suspicious entries · 🟠 masked/private MACs · 🔴 failed or blocked checks.
 
 ## Languages 🌐
 
@@ -137,7 +147,7 @@ Versions follow the format **`X.X.X` (MAJOR.MINOR.PATCH)**:
 | `0.0.X` | 🔧 **Mini update** | bug fixes, small improvements |
 
 Example flow: `1.0.0 → 1.0.1` (fix) `→ 1.1.0` (new feature) `→ 2.0.0` (global rewrite).
-Current version: **1.1.0** — see the [releases page](../../releases).
+Current version: **1.2.0** — see the [releases page](../../releases).
 
 ## FAQ ❓
 
@@ -148,7 +158,9 @@ Logs are never committed to git (see `.gitignore`).
 
 **Why does the ARP section say "unavailable"?** The container/VM may lack `ip neigh` or a real LAN. On a normal Linux host it works out of the box.
 
-**How do I stop the periodic scans?** Press `Ctrl+C` or type `quit`.
+**How do I stop the live updates?** Type `quit` (stops the logging thread cleanly).
+
+**Can I disable colors?** Yes — run without a TTY or export `NO_COLOR=1`.
 
 ## Security & ethics 🔐
 
