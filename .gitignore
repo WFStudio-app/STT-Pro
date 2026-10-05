@@ -3,3 +3,7 @@ __pycache__/
 logs/
 *.log
 monitor.out
+node_modules/
+.next/
+dist/
+build/
