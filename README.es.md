@@ -168,6 +168,24 @@ Esta herramienta solo lee información que tu propio sistema operativo ya expone
 localmente. Realiza monitoreo pasivo (sin escaneo de puertos, sin inyección de
 paquetes). Úsala solo en redes que te pertenezcan o que tengas permiso de monitorear.
 
+
+## 📂 Estructura del proyecto
+
+```
+Eyes-of-the-Network/
+├── net_monitor.py            # punto de entrada (REPL + hilo en vivo)
+├── eyes/
+│   ├── core/                 # version.py · i18n.py · colors.py · logstore.py
+│   ├── utils/                # classify.py · banner.py · shell.py
+│   └── modules/              # collectors.py · pinger.py · snapshot.py
+├── docs/ARCHITECTURE.md      # guía completa de arquitectura
+├── scripts/run.sh            # inicio rápido
+├── examples/                 # session.log de ejemplo
+└── logs/                     # registros (ignorados por git)
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
+
 ## Licencia 📄
 
 [MIT](LICENSE) © 2026 WFStudio-app

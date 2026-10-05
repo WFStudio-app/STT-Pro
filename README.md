@@ -168,6 +168,24 @@ This tool only reads information your own OS already exposes locally. It perform
 passive monitoring (no port scanning, no packet injection). Use it only on networks
 you own or have permission to monitor.
 
+
+## 📂 Project structure
+
+```
+Eyes-of-the-Network/
+├── net_monitor.py            # entry point (REPL + live thread)
+├── eyes/
+│   ├── core/                 # version.py · i18n.py · colors.py · logstore.py
+│   ├── utils/                # classify.py · banner.py · shell.py
+│   └── modules/              # collectors.py · pinger.py · snapshot.py
+├── docs/ARCHITECTURE.md      # full architecture guide
+├── scripts/run.sh            # quick start
+├── examples/                 # sample session.log
+└── logs/                     # runtime logs (git-ignored)
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
+
 ## License 📄
 
 [MIT](LICENSE) © 2026 WFStudio-app
