@@ -45,7 +45,7 @@ from datetime import datetime
 # ----------------------------------------------------------------------
 VERSION_MAJOR = 1   # X.0.0 — Global update
 VERSION_MINOR = 2   # 0.X.0 — Major feature update
-VERSION_PATCH = 0   # 0.0.X — Mini update (patch)
+VERSION_PATCH = 1   # 0.0.X — Mini update (patch)
 VERSION = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
 
 UPDATE_ALGORITHM = """
@@ -196,7 +196,11 @@ PRIVATE_MAC_OUI = {
 
 
 def color_enabled():
-    return sys.stdout.isatty() and os.environ.get("NO_COLOR") is None
+    if os.environ.get("NO_COLOR") is not None:
+        return False
+    if os.environ.get("FORCE_COLOR") is not None:
+        return True
+    return sys.stdout.isatty()
 
 
 USE_COLOR = color_enabled()
@@ -318,17 +322,27 @@ def own_ips():
 # ----------------------------------------------------------------------
 def classify_line(line, ctx):
     low = line.lower()
+    # Neutral lines: headers, banners, separators — never decide the color.
+    stripped = line.strip()
+    if not stripped:
+        return "neutral"
+    if stripped.startswith("#") or stripped.startswith("###"):
+        return "neutral"
+    if any(ch in stripped for ch in "║╔╚╠═"):
+        return "neutral"
+    if low.startswith("eyes of the network") or low.startswith("monitor iniciado"):
+        return "neutral"
+    # PURPLE — own network (local/loopback/link-local/machine's own IPs)
+    if any(k in low for k in ("lo ", "loopback", "::1", "127.0.0.",
+                              "10.", "172.16.", "192.168.", "169.254.",
+                              "fe80", "myself", "own")):
+        return "own"
     # RED — blocked / failed / didn't reach
     if any(k in low for k in ("fail", "blocked", "denied", "unreachable",
                               "refused", "timeout", "timed out", "no route",
                               "permits", " ! ", "offline", "down")) \
             or "FAIL" in line:
         return "error"
-    # PURPLE — own network (local/loopback/link-local/machine's own IPs)
-    if any(k in low for k in ("lo ", "loopback", "::1", "127.0.0.",
-                              "10.", "172.16.", "192.168.", "169.254.",
-                              "fe80", "myself", "own")):
-        return "own"
     # ORANGE — masked (locally-administered/private MAC, hidden/anonymized)
     m = re.search(r"([0-9a-f]{2}:){5}[0-9a-f]{2}", low)
     if m:
@@ -361,22 +375,28 @@ def colorize_log(text, default="success"):
     out_lines = []
     for line in text.splitlines():
         cat = classify_line(line, ctx)
+        if cat == "neutral":
+            out_lines.append(line)
+            continue
         out_lines.append(paint(line, CATEGORY_COLOR[cat]))
     return "\n".join(out_lines)
 
 
 def categorize_full(text):
-    """Overall category of a log = worst thing found inside it."""
+    """Overall category of a log = the most informative (characteristic)
+    line inside it.  Neutral header lines are ignored, so a normal snapshot
+    is SUCCESS (green), while snapshots containing failures / masked MACs /
+    own-network traffic get the corresponding color."""
     class _Ctx:
-        default = "success"
+        default = "neutral"
     ctx = _Ctx()
-    order = ["success", "own", "warning", "masked", "error"]
-    worst = "success"
+    priority = ["error", "masked", "warning", "own", "success"]
     for line in text.splitlines():
         cat = classify_line(line, ctx)
-        if order.index(cat) > order.index(worst):
-            worst = cat
-    return worst
+        if cat == "neutral":
+            continue
+        return cat
+    return "success"
 
 
 # ----------------------------------------------------------------------
