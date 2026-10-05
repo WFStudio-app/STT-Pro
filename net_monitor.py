@@ -1,44 +1,143 @@
 #!/usr/bin/env python3
 """
-net_monitor.py — сетевой монитор для Termux.
+net_monitor.py — Eyes of the Network
 
-Читает информацию о сети, к которой подключено устройство (интерфейсы, IP,
-DNS, маршруты, ARP-соседи, соединения, проверка доступности шлюза/DNS),
-подробно логирует всё в терминал с нумерованными записями и позволяет
-открывать любой лог командой:  <номер> open-list
-Логи также сохраняются в файл logs/session.log, чтобы не зависеть от
-буфера прокрутки Termux.
+Network monitor for Linux. Reads information about the network the device is
+connected to (interfaces, IP, DNS, routes, ARP neighbors, connections,
+gateway/DNS reachability), logs everything with numbered detailed entries in
+the terminal, and lets you open any log with the command:  <number> open-list
+All logs are also saved to logs/session.log.
 
-Запуск:      python net_monitor.py
-Остановка:   Ctrl+C
-Команды:     N open-list  — показать полный лог №N
-             list         — список логов
-             clear        — очистить историю
-             help         — справка
-             quit         — выход
+Versioning scheme (SemVer-like):
+    MAJOR.MINOR.PATCH
+      MAJOR (X.0.0) -> Global update        (breaking changes / full rewrite)
+      MINOR (0.X.0) -> Major feature update (new features, backward compatible)
+      PATCH (0.0.X) -> Mini update          (bug fixes, small tweaks)
+
+Usage:      python3 net_monitor.py            (English, default)
+            python3 net_monitor.py --lang es  (Spanish)
+Stop:       Ctrl+C
+Commands:   N open-list  — show full log #N
+            list         — list all logs
+            version      — current version + update algorithm
+            help         — help
+            quit         — exit
 """
 
 import os
 import re
 import sys
-import time
 import socket
-import struct
 import subprocess
 import threading
-import platform
 from datetime import datetime
+
+# ----------------------------------------------------------------------
+# Version & update algorithm
+# ----------------------------------------------------------------------
+VERSION_MAJOR = 1   # X.0.0 — Global update
+VERSION_MINOR = 1   # 0.X.0 — Major feature update
+VERSION_PATCH = 0   # 0.0.X — Mini update (patch)
+VERSION = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
+
+UPDATE_ALGORITHM = """
+Update algorithm:
+  X.0.0  ->  Global update   (major rewrite, breaking changes)
+  0.X.0  ->  Major update    (new features, backward compatible)
+  0.0.X  ->  Mini update     (fixes, small improvements)
+  Format:  X.X.X  (MAJOR.MINOR.PATCH)
+"""
+
+# ----------------------------------------------------------------------
+# i18n — English / Spanish
+# ----------------------------------------------------------------------
+LANG = os.environ.get("LANG_PREFIX", "en")
+if "--lang" in sys.argv:
+    try:
+        LANG = sys.argv[sys.argv.index("--lang") + 1]
+    except IndexError:
+        pass
+if LANG not in ("en", "es"):
+    LANG = "en"
+
+T = {
+    "en": {
+        "title": "Eyes of the Network — Linux network monitor",
+        "started": "Monitor started. Commands: scan | list | N open-list | version | clear | help | quit",
+        "iface_header": "NETWORK INTERFACES",
+        "addresses": "IP addresses",
+        "mac": "MAC address",
+        "state": "State",
+        "dns_header": "DNS CONFIGURATION",
+        "routes_header": "IP ROUTING TABLE",
+        "arp_header": "ARP NEIGHBORS",
+        "conns_header": "ACTIVE TCP/UDP CONNECTIONS",
+        "ping_header": "REACHABILITY CHECK",
+        "default_gw": "Default gateway",
+        "hostname": "Hostname",
+        "os_info": "Operating system",
+        "periodic": "Periodic scan finished",
+        "log_saved": "Full log saved to file:",
+        "not_found": "Log not found",
+        "total_logs": "Total logs",
+        "help_text": (
+            "Commands:\n"
+            "  scan          — capture a new network snapshot\n"
+            "  list          — numbered list of all captured logs\n"
+            "  N open-list   — open the FULL detailed log number N\n"
+            "  version       — program version and update algorithm\n"
+            "  clear         — clear log history in memory\n"
+            "  help          — this help\n"
+            "  quit          — exit\n"
+        ),
+        "exit": "Exiting. Goodbye!",
+        "up": "UP", "down": "DOWN",
+    },
+    "es": {
+        "title": "Eyes of the Network — Monitor de red para Linux",
+        "started": "Monitor iniciado. Comandos: scan | list | N open-list | version | clear | help | quit",
+        "iface_header": "INTERFACES DE RED",
+        "addresses": "Direcciones IP",
+        "mac": "Dirección MAC",
+        "state": "Estado",
+        "dns_header": "CONFIGURACIÓN DNS",
+        "routes_header": "TABLA DE ENRUTAMIENTO IP",
+        "arp_header": "VECINOS ARP",
+        "conns_header": "CONEXIONES TCP/UDP ACTIVAS",
+        "ping_header": "COMPROBACIÓN DE ALCANCE",
+        "default_gw": "Puerta de enlace predeterminada",
+        "hostname": "Nombre del host",
+        "os_info": "Sistema operativo",
+        "periodic": "Escaneo periódico finalizado",
+        "log_saved": "Registro completo guardado en archivo:",
+        "not_found": "Registro no encontrado",
+        "total_logs": "Registros totales",
+        "help_text": (
+            "Comandos:\n"
+            "  scan          — capturar una nueva instantánea de red\n"
+            "  list          — lista numerada de todos los registros\n"
+            "  N open-list   — abrir el registro COMPLETO y detallado número N\n"
+            "  version       — versión del programa y algoritmo de actualización\n"
+            "  clear         — limpiar el historial en memoria\n"
+            "  help          — esta ayuda\n"
+            "  quit          — salir\n"
+        ),
+        "exit": "Saliendo. ¡Adiós!",
+        "up": "ACTIVA", "down": "INACTIVA",
+    },
+}
+TR = T[LANG]
 
 LOG_DIR = "logs"
 LOG_FILE = os.path.join(LOG_DIR, "session.log")
 
 
 # ----------------------------------------------------------------------
-# Хранилище логов
+# Log storage
 # ----------------------------------------------------------------------
 class LogStore:
     def __init__(self):
-        self.entries = {}          # номер -> текст
+        self.entries = {}          # number -> text
         self.counter = 0
         self.lock = threading.Lock()
         os.makedirs(LOG_DIR, exist_ok=True)
@@ -49,7 +148,7 @@ class LogStore:
             n = self.counter
             self.entries[n] = text
         stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        header = f"===== ЛОГ #{n} | {stamp} ====="
+        header = f"===== LOG #{n} | {stamp} ====="
         full = header + "\n" + text + "\n"
         print(full)
         sys.stdout.flush()
@@ -63,7 +162,7 @@ class LogStore:
     def listing(self):
         with self.lock:
             keys = sorted(self.entries.keys())
-        lines = [f"Всего логов: {len(keys)}"]
+        lines = [f"{TR['total_logs']}: {len(keys)}"]
         for k in keys:
             first = self.entries[k].strip().splitlines()[0] if self.entries[k] else ""
             lines.append(f"  #{k}: {first[:70]}")
@@ -77,285 +176,188 @@ class LogStore:
 store = LogStore()
 
 
-def run(cmd):
-    """Выполнить команду, вернуть (код, stdout+stderr)."""
+def run(cmd_list):
+    """Run a shell command, return stdout text ('' on failure)."""
     try:
-        p = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=20)
-        out = (p.stdout or "") + (p.stderr or "")
-        return p.returncode, out.strip()
-    except Exception as e:
-        return -1, f"Ошибка выполнения '{cmd}': {e}"
+        out = subprocess.run(cmd_list, capture_output=True, text=True, timeout=10)
+        return out.stdout
+    except Exception:
+        return ""
 
 
 # ----------------------------------------------------------------------
-# Сбор сетевой информации (без внешних pip-зависимостей)
+# Linux data collectors
 # ----------------------------------------------------------------------
-def get_interfaces():
-    """Список сетевых интерфейсов из /sys/class/net."""
+def collect_interfaces():
+    """Parse /sys/class/net + `ip addr` for interfaces, IPs, MAC, state."""
+    lines = [f"### {TR['iface_header']}"]
     base = "/sys/class/net"
-    if not os.path.isdir(base):
-        return []
-    result = []
-    for name in sorted(os.listdir(base)):
-        path = os.path.join(base, name)
+    ifaces = sorted(os.listdir(base)) if os.path.isdir(base) else []
+    ip_out = run(["ip", "-br", "addr", "show"])
+    for iface in ifaces:
+        path = os.path.join(base, iface)
+        state = "?"
         try:
             with open(os.path.join(path, "operstate")) as f:
-                state = f.read().strip()
-        except OSError:
-            state = "unknown"
+                st = f.read().strip()
+            state = TR["up"] if st == "up" else TR["down"]
+        except Exception:
+            pass
+        mac = ""
         try:
             with open(os.path.join(path, "address")) as f:
                 mac = f.read().strip()
-        except OSError:
-            mac = "?"
-        try:
-            with open(os.path.join(path, "mtu")) as f:
-                mtu = f.read().strip()
-        except OSError:
-            mtu = "?"
-        result.append({"name": name, "state": state, "mac": mac, "mtu": mtu})
-    return result
-
-
-def get_ip_for_iface(iface):
-    code, out = run(f"ip -o addr show dev {iface}")
-    return out if code == 0 else "(нет ip - команды)"
-
-
-def get_default_route():
-    code, out = run("ip route show default")
-    if code != 0 or not out:
-        code2, out2 = run("route -n")
-        return out2 if out2 else "Не удалось получить маршрут по умолчанию."
-    return out
-
-
-def get_dns():
-    info = []
-    try:
-        with open("/etc/resolv.conf") as f:
-            info.append("=== /etc/resolv.conf ===\n" + f.read().strip())
-    except OSError:
-        info.append("/etc/resolv.conf недоступен (в Termux DNS берётся от Android).")
-    code, out = run("getprop net.dns1; getprop net.dns2")
-    if out:
-        info.append("=== Android DNS (getprop) ===\n" + out)
-    return "\n\n".join(info)
-
-
-def get_arp_table():
-    code, out = run("ip neigh show")
-    if code == 0 and out:
-        return out
-    code, out = run("arp -an")
-    return out if out else "ARP-таблица пуста или недоступна (нужен root для полного вывода)."
-
-
-def get_connections():
-    code, out = run("ss -tunap")
-    if code != 0 or not out:
-        code, out = run("netstat -tunap")
-    return out if out else "Не удалось получить список соединений (ss/netstat недоступны)."
-
-
-def ping_host(host, count=3):
-    code, out = run(f"ping -c {count} -W 2 {host}")
-    return out if out else f"ping {host}: нет вывода (код {code})"
-
-
-def dns_lookup(domain="google.com"):
-    try:
-        infos = socket.getaddrinfo(domain, None)
-        ips = sorted(set(i[4][0] for i in infos))
-        return f"DNS-резолвинг {domain}: {', '.join(ips)}"
-    except Exception as e:
-        return f"DNS-резолвинг {domain} НЕ УДАЛСЯ: {e}"
-
-
-def check_connectivity():
-    """TCP-проверка доступа в интернет (без ICMP, который может блокироваться)."""
-    targets = [("8.8.8.8", 53), ("1.1.1.1", 53), ("github.com", 443)]
-    results = []
-    for host, port in targets:
-        try:
-            t0 = time.time()
-            s = socket.create_connection((host, port), timeout=3)
-            dt = (time.time() - t0) * 1000
-            s.close()
-            results.append(f"  TCP {host}:{port} — ОК, {dt:.0f} мс")
-        except Exception as e:
-            results.append(f"  TCP {host}:{port} — ОШИБКА: {e}")
-    return "\n".join(results)
-
-
-def scan_local_subnet(gateway=None, max_hosts=30):
-    """Быстрое ARP-сканирование подсети через пинги (без scapy)."""
-    if not gateway:
-        code, out = run("ip route show default")
-        m = re.search(r"via (\d+\.\d+\.\d+\.\d+)", out or "")
-        gateway = m.group(1) if m else None
-    if not gateway:
-        return "Шлюз не определён — сканирование подсети пропущено."
-    prefix = ".".join(gateway.split(".")[:3])
-    lines = [f"Сканирование подсети {prefix}.1-{max_hosts} (пинг, ~{max_hosts*0.3:.0f} сек)..."]
-    alive = []
-    for i in range(1, max_hosts + 1):
-        ip = f"{prefix}.{i}"
-        code, out = run(f"ping -c 1 -W 1 {ip}")
-        if code == 0:
-            alive.append(ip)
-            lines.append(f"  [ONLINE] {ip}")
-    run("")  # no-op
-    code, arp = run("ip neigh show")
-    lines.append("=== ARP после скана ===")
-    lines.append(arp or "(пусто)")
-    lines.append(f"Найдено активных хостов: {len(alive)} -> {', '.join(alive) if alive else '—'}")
+        except Exception:
+            pass
+        addrs = []
+        for row in ip_out.splitlines():
+            parts = row.split()
+            if len(parts) >= 3 and parts[0] == iface:
+                addrs.append(f"{parts[2]} ({parts[1]})")
+        lines.append(f"[{iface}] {TR['state']}: {state} | {TR['mac']}: {mac}")
+        lines.append(f"    {TR['addresses']}: {', '.join(addrs) if addrs else '—'}")
     return "\n".join(lines)
 
 
-# ----------------------------------------------------------------------
-#High-level сборы, каждый = один нумерованный лог
-# ----------------------------------------------------------------------
-def log_basic_info():
-    parts = []
-    parts.append("=== СИСТЕМА ===")
-    parts.append(f"Hostname: {socket.gethostname()}")
-    parts.append(f"OS: {platform.system()} {platform.release()}, Python {platform.python_version()}")
-    code, out = run("uname -a")
-    parts.append(out)
-    code, out = run("termux-info 2>/dev/null || getprop ro.product.model; getprop ro.build.version.release")
-    if out:
-        parts.append("=== УСТРОЙСТВО (Android) ===\n" + out)
-    store.add("\n".join(parts))
+def collect_dns():
+    lines = [f"### {TR['dns_header']}"]
+    try:
+        with open("/etc/resolv.conf", encoding="utf-8", errors="replace") as f:
+            content = f.read().strip()
+        lines.append(content if content else "(empty)")
+    except Exception as e:
+        lines.append(f"resolv.conf error: {e}")
+    return "\n".join(lines)
 
 
-def log_interfaces():
-    parts = ["=== СЕТЕВЫЕ ИНТЕРФЕЙСЫ ==="]
-    ifaces = get_interfaces()
-    if not ifaces:
-        parts.append("Интерфейсы не найдены.")
-    for i in ifaces:
-        parts.append(f"\n--- {i['name']} (состояние: {i['state']}, MAC: {i['mac']}, MTU: {i['mtu']}) ---")
-        parts.append(get_ip_for_iface(i["name"]))
-    store.add("\n".join(parts))
-    return [i["name"] for i in ifaces if i["state"] == "up" and i["name"] != "lo"]
+def collect_routes():
+    lines = [f"### {TR['routes_header']}"]
+    out = run(["ip", "route", "show"])
+    if not out:
+        out = run(["route", "-n"])
+    lines.append(out.strip() or "(no routes output)")
+    gw = ""
+    for row in out.splitlines():
+        m = re.search(r"default via (\S+)", row)
+        if m:
+            gw = m.group(1)
+            break
+    lines.append(f"{TR['default_gw']}: {gw or '?'}")
+    return "\n".join(lines), gw
 
 
-def log_routes_dns():
-    parts = ["=== МАРШРУТЫ ===", get_default_route(), "", "=== DNS ===", get_dns()]
-    code, out = run("ip route show")
-    parts.append("\n=== ПОЛНАЯ ТАБЛИЦА МАРШРУТОВ ===")
-    parts.append(out or "(недоступно)")
-    store.add("\n".join(parts))
-    m = re.search(r"via (\d+\.\d+\.\d+\.\d+)", get_default_route())
-    return m.group(1) if m else None
+def collect_arp():
+    lines = [f"### {TR['arp_header']}"]
+    out = run(["ip", "neigh", "show"])
+    if not out:
+        out = run(["arp", "-an"])
+    lines.append(out.strip() or "(ARP table empty / unavailable)")
+    return "\n".join(lines)
 
 
-def log_arp_and_connections():
-    parts = ["=== ARP-ТАБЛИЦА (соседи в локальной сети) ===", get_arp_table(),
-             "", "=== АКТИВНЫЕ СОЕДИНЕНИЯ ===", get_connections()]
-    store.add("\n".join(parts))
+def collect_connections():
+    lines = [f"### {TR['conns_header']}"]
+    out = run(["ss", "-tunap"])
+    if not out:
+        out = run(["netstat", "-tunap"])
+    body = out.strip().splitlines()
+    lines.extend(body[:60])
+    if len(body) > 60:
+        lines.append(f"... ({len(body) - 60} more rows)")
+    return "\n".join(lines)
 
 
-def log_connectivity(gateway):
-    parts = ["=== ПРОВЕРКА СВЯЗИ ==="]
+def ping_check(gateway):
+    lines = [f"### {TR['ping_header']}"]
+    targets = []
     if gateway:
-        parts.append(f"--- ping шлюза {gateway} ---")
-        parts.append(ping_host(gateway))
-    parts.append("--- DNS-резолвинг ---")
-    parts.append(dns_lookup("google.com"))
-    parts.append("--- TCP-доступность интернета ---")
-    parts.append(check_connectivity())
-    store.add("\n".join(parts))
+        targets.append(gateway)
+    targets.append("8.8.8.8")
+    for t in targets:
+        out = run(["ping", "-c", "3", "-W", "2", t])
+        recv = re.search(r"(\d+) packets? received", out)
+        rtt = re.search(r"=\s*[\d.]+/([\d.]+)/", out)
+        status = "OK" if recv and int(recv.group(1)) > 0 else "FAIL"
+        lines.append(f"ping {t}: {status} "
+                     f"(received={recv.group(1) if recv else 0}/3, "
+                     f"avg RTT={rtt.group(1) if rtt else '?'} ms)")
+    return "\n".join(lines)
 
 
-def log_subnet_scan(gateway):
-    store.add("=== СКАН ЛОКАЛЬНОЙ СЕТИ ===\n" + scan_local_subnet(gateway))
+def build_full_log():
+    parts = [
+        f"{TR['title']} v{VERSION} | lang={LANG}",
+        f"{TR['os_info']}: Linux, kernel {run(['uname', '-r']).strip()}",
+        f"{TR['hostname']}: {socket.gethostname()}",
+        "",
+        collect_interfaces(),
+        "",
+        collect_dns(),
+        "",
+    ]
+    routes_txt, gw = collect_routes()
+    parts += [routes_txt, "", collect_arp(), "", collect_connections(), "", ping_check(gw)]
+    return "\n".join(parts)
 
 
 # ----------------------------------------------------------------------
-# Интерактивная консоль с командами вида "N open-list"
+# Main loop
 # ----------------------------------------------------------------------
-HELP = """
-Команды:
-  <номер> open-list  — открыть подробный лог №<номер>
-  list               — список всех логов
-  scan               — пересобрать всю сетевую информацию
-  subnet             — скан локальной подсети
-  ping <хост>        — пропинговать хост (новым логом)
-  clear              — очистить историю логов
-  help               — эта справка
-  quit               — выход
-"""
-
-CMD_RE = re.compile(r"^(\d+)\s+open-list$", re.IGNORECASE)
-
-
-def handle_line(line, gateway_holder):
-    line = line.strip()
-    if not line:
-        return True
-    m = CMD_RE.match(line)
-    if m:
-        n = int(m.group(1))
-        text = store.get(n)
-        if text is None:
-            print(f"[!] Лог #{n} не найден. Доступны: list")
-        else:
-            print(f"\n########## ПОЛНЫЙ ЛОГ #{n} ##########\n{text}\n{'#' * 40}\n")
-        return True
-    low = line.lower()
-    if low in ("quit", "exit", "q"):
-        print("Выход. Полный лог сессии сохранён в", LOG_FILE)
-        return False
-    if low == "help":
-        print(HELP)
-        return True
-    if low == "list":
-        print(store.listing())
-        return True
-    if low == "clear":
-        store.clear()
-        print("История очищена (файл", LOG_FILE, "не тронут).")
-        return True
-    if low == "scan":
-        do_full_scan(gateway_holder)
-        return True
-    if low == "subnet":
-        log_subnet_scan(gateway_holder.get("gw"))
-        return True
-    if low.startswith("ping "):
-        host = line.split(None, 1)[1]
-        store.add(f"=== PING {host} ===\n" + ping_host(host, 4))
-        return True
-    print("Неизвестная команда. help — список команд.")
-    return True
-
-
-def do_full_scan(gw_holder):
-    log_basic_info()
-    log_interfaces()
-    gw = log_routes_dns()
-    if gw:
-        gw_holder["gw"] = gw
-    log_arp_and_connections()
-    log_connectivity(gw_holder.get("gw"))
-
-
 def main():
-    print(__doc__)
-    gw_holder = {}
-    print("[*] Первичный сбор сетевой информации...")
-    do_full_scan(gw_holder)
-    print("[*] Монитор запущен. Введите help для списка команд.")
+    print(f"\n*** {TR['title']} v{VERSION} ***")
+    print(TR["started"] + "\n")
+
+    store.add(build_full_log())
+
+    stop = threading.Event()
+
+    def periodic():
+        while not stop.wait(60):
+            try:
+                store.add(build_full_log())
+                print(f"[{datetime.now():%H:%M:%S}] {TR['periodic']}")
+            except Exception as e:
+                print(f"periodic scan error: {e}")
+
+    th = threading.Thread(target=periodic, daemon=True)
+    th.start()
+
     while True:
         try:
-            line = input(f"netmon:{store.counter}> ")
+            line = input("\n> ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\nВыход. Лог сессии:", LOG_FILE)
             break
-        if not handle_line(line, gw_holder):
+        if not line:
+            continue
+        low = line.lower()
+        if low in ("quit", "exit"):
+            print(TR["exit"])
             break
+        elif low == "help":
+            print(TR["help_text"])
+        elif low == "list":
+            print(store.listing())
+        elif low == "version":
+            print(f"Eyes of the Network v{VERSION}\n{UPDATE_ALGORITHM}")
+        elif low == "clear":
+            store.clear()
+            print("OK")
+        elif low == "scan":
+            store.add(build_full_log())
+        else:
+            m = re.match(r"^(\d+)\s+open-list$", low)
+            if m:
+                n = int(m.group(1))
+                entry = store.get(n)
+                if entry is None:
+                    print(f"{TR['not_found']}: #{n}")
+                else:
+                    print(entry)
+                    print(f"\n({TR['log_saved']} {os.path.abspath(LOG_FILE)})")
+            else:
+                print(TR["help_text"])
+
+    stop.set()
 
 
 if __name__ == "__main__":

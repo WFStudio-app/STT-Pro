@@ -1,183 +1,161 @@
-<div align="center">
-
 # 👁️ Eyes of the Network
 
-**Сетевой монитор с подробным нумерованным логированием для Termux (Android)**
+> **EN** · [ES](README.es.md)
 
-`Python 3` · `Без зависимостей` · `Termux-ready` · `Логи под номерами`
+[![Version](https://img.shields.io/badge/version-1.1.0-blue)](#-update-algorithm)
+[![Platform](https://img.shields.io/badge/platform-Linux-FCC624?logo=linux&logoColor=black)]()
+[![Python](https://img.shields.io/badge/python-3.6+-3776AB?logo=python&logoColor=white)]()
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Langs](https://img.shields.io/badge/languages-EN%20|%20ES-lightgrey)]()
 
-[Возможности](#-возможности) • [Быстрый старт](#-быстрый-старт) • [Команды](#-команды-внутри-скрипта) • [Пример лога](#-пример-вывода) • [FAQ](#-faq)
-
-</div>
-
----
-
-## 📖 О проекте
-
-**Eyes of the Network** — лёгкий скрипт на чистом Python, который читает всю информацию о сети, к которой подключено ваше устройство (смартфон, планшет, роутер в гостевой сети и т.д.), и подробно логирует каждое наблюдение **с присвоением номера**. Любой лог можно мгновенно открыть целиком командой:
-
-```
-<N> open-list
-```
-
-Например: `7 open-list` — покажет полный подробный лог №7.
-
-Всё пишется **и в терминал, и в файл** `logs/session.log`, поэтому логи не теряются даже после закрытия Termux.
-
-> 💡 Проект создан для работы прямо на Android-планшете/телефоне в **Termux**. Никаких root-прав не требуется, никаких сторонних pip-библиотек — только стандартная библиотека Python.
+**Eyes of the Network** is a lightweight terminal network monitor for **Linux**.
+It captures everything about the network your device is connected to — interfaces,
+IP/MAC addresses, DNS, routing table, ARP neighbors, active TCP/UDP connections and
+reachability checks — and stores every snapshot as a **numbered detailed log** right
+in your terminal (and in a file). Need to re-read an old snapshot? Just type its
+number: `42 open-list`. 🎯
 
 ---
 
-## ✨ Возможности
-
-| | |
-|---|---|
-| 🌐 **Интерфейсы** | все сетевые интерфейсы устройства, IP/MAC-адреса, статус |
-| 🛜 **Wi-Fi / сеть** | SSID подключенной сети (через termux-api), уровень сигнала |
-| 🗺️ **Маршруты и DNS** | таблица маршрутизации, шлюз по умолчанию, DNS-серверы |
-| 🧲 **ARP-соседи** | кто ещё находится в вашей локальной подсети |
-| 🔌 **Активные соединения** | список TCP/UDP сокетов (`ss` / `netstat`) |
-| 📡 **Ping хостов** | проверка доступности шлюза, DNS и произвольных адресов |
-| 🔎 **Скан подсети** | обход всей локальной сети пингом + ARP-таблица |
-| 🔢 **Нумерованные логи** | каждая запись получает номер #1, #2, #3… |
-| 📜 **open-list** | `3 open-list` открывает полный текст лога №3 |
-| 💾 **Двойная запись** | терминал + файл `logs/session.log` |
-| ⏱️ **Автообновление** | фоновый сбор статистики каждые несколько секунд |
-| 🕒 **Метки времени** | каждый лог снабжён точным timestamp |
+## 📑 Table of contents
+- [Features ✨](#-features)
+- [Requirements 📦](#-requirements)
+- [Quick start 🚀](#-quick-start)
+- [Commands 🖥️](#-commands)
+- [Example output 🧾](#-example-output)
+- [Languages 🌐](#-languages)
+- [Update algorithm 🔢](#-update-algorithm)
+- [FAQ ❓](#-faq)
+- [Security & ethics 🔐](#-security--ethics)
+- [License 📄](#-license)
 
 ---
 
-## 📦 Требования
+## Features ✨
 
-- **Android** 7.0+ с установленным [Termux из F-Droid](https://f-droid.org/packages/com.termux/)
-  (из Play Store версия устарела — используйте F-Droid!)
-- **Python 3.8+** (ставится одной командой, см. ниже)
-- Опционально: `termux-api` (SSID и уровень Wi-Fi), `iproute2` (`ip`, `ss`), `net-toolsutils` (`arp`, `netstat`).
-  Без них скрипт всё равно запустится — просто часть логов будет беднее.
+- 🌐 **Full network snapshot**: interfaces (`/sys/class/net`), IP/MAC, link state
+- 🧬 **DNS config** from `/etc/resolv.conf`
+- 🛣️ **Routing table** + default gateway detection
+- 👥 **ARP neighbors** — who else is on your LAN
+- 🔌 **Active TCP/UDP connections** (`ss` / `netstat`)
+- 🏓 **Reachability check** — ping to gateway and external DNS with RTT stats
+- 🔢 **Numbered logs** printed in detail straight to the terminal
+- 📂 Every log also persisted to `logs/session.log` (survives scrollback loss)
+- 🕘 **Auto periodic scan** every 60 seconds (runs in background thread)
+- 🔎 `N open-list` — instantly reopen the **full mega-detailed log #N**
+- 🌍 Bilingual UI: **English** and **Español**
 
----
+## Requirements 📦
 
-## 🚀 Быстрый старт
+| Component | Version | Notes |
+|---|---|---|
+| Linux | any distro | Debian/Ubuntu, Fedora, Arch, Alpine... |
+| Python | 3.6+ | standard library only — no pip installs needed |
+| iproute2 | any | `ip`, `ss` (usually preinstalled) |
+| iputils | any | `ping` |
 
-### 1. Установка зависимостей в Termux (один раз)
+## Quick start 🚀
 
 ```bash
-pkg update && pkg upgrade -y
-pkg install python termux-api iproute2 net-toolsutils which -y
-```
-
-Для полной информации о Wi-Fi установите также приложение **Termux:API** из F-Droid.
-
-### 2. Клонирование репозитория
-
-```bash
+# 1. Clone or download the repo
 git clone https://github.com/WFStudio-app/Eyes-of-the-Network.git
 cd Eyes-of-the-Network
+
+# 2. Run it (English by default)
+python3 net_monitor.py
+
+# Spanish version:
+python3 net_monitor.py --lang es
 ```
 
-*(или скачайте `net_monitor.py` кнопкой **Code → Download ZIP**)*
+On first run the monitor immediately captures **log #1** and prints it in full
+detail to the terminal, then keeps scanning every 60 s. Type commands at the `>` prompt.
 
-### 3. Запуск
+## Commands 🖥️
 
-```bash
-python net_monitor.py
-```
-
-При старте скрипт сам собирает данные о сети и выводит **нумерованные логи** (#1, #2…) прямо в терминал. Дубли пишутся в `logs/session.log`.
-
-Остановка — `Ctrl+C` или команда `quit`.
-
----
-
-## 🖥️ Команды внутри скрипта
-
-| Команда | Что делает |
+| Command | Description |
 |---|---|
-| `3 open-list` | 🔓 открыть **полный** подробный лог №3 |
-| `list` | 📃 список всех логов: номер, время, краткое описание |
-| `scan` | 🔄 пересобрать всю сетевую информацию (создаются новые логи) |
-| `subnet` | 🛰️ скан локальной подсети (пинги + ARP) |
-| `ping 192.168.1.1` | 📡 пропинговать хост — результат станет новым логом |
-| `clear` | 🧹 очистить историю нумерации |
-| `help` | ❓ справка по командам |
-| `quit` | 🚪 выход (логи остаются в файле) |
+| `scan` | capture a new network snapshot now |
+| `list` | numbered list of all captured logs |
+| `N open-list` | open the **full detailed log** number N (e.g. `3 open-list`) |
+| `version` | program version + update algorithm |
+| `clear` | clear log history in memory |
+| `help` | show help |
+| `quit` / `Ctrl+C` | exit |
 
-Команды вводятся в том же терминале, где работает скрипт, во время фонового мониторинга.
-
----
-
-## 🧾 Пример вывода
+## Example output 🧾
 
 ```
-[#4] 2026-10-05 15:41:02 — Маршруты (ip route)
-------------------------------------------------
-default via 192.168.1.1 dev wlan0 proto dhcp metric 600
-192.168.1.0/24 dev wlan0 proto kernel scope link src 192.168.1.55
-...
+===== LOG #1 | 2026-10-05 14:22:31 =====
+Eyes of the Network v1.1.0 | lang=en
+Operating system: Linux, kernel 6.8.0-45-generic
+Hostname: thinkpad
 
-> 4 open-list
+### NETWORK INTERFACES
+[eth0] State: UP | MAC address: 3c:7c:3f:12:aa:01
+    IP addresses: 192.168.1.42/24 (inet)
+[lo] State: UP | MAC address: 00:00:00:00:00:00
+    IP addresses: 127.0.0.1/8 (inet)
 
-========== ПОЛНЫЙ ЛОГ №4 ==========
-Время : 2026-10-05 15:41:02
-Заголовок: Маршруты (ip route)
-------------------------------------
-default via 192.168.1.1 dev wlan0 proto dhcp metric 600
-192.168.1.0/24 dev wlan0 proto kernel scope link src 192.168.1.55
-192.168.1.1 dev wlan0 lladdr aa:bb:cc:dd:ee:ff REACHABLE
-====================================
+### DNS CONFIGURATION
+nameserver 192.168.1.1
+
+### IP ROUTING TABLE
+default via 192.168.1.1 dev eth0 proto dhcp
+192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.42
+Default gateway: 192.168.1.1
+
+### ARP NEIGHBORS
+192.168.1.1 dev eth0 lladdr f4:83:77:11:22:33 REACHABLE
+
+### ACTIVE TCP/UDP CONNECTIONS
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port  Process
+ESTAB  0      0      192.168.1.42:44312  140.82.121.4:443   users:(("chrome",pid=2211))
+
+### REACHABILITY CHECK
+ping 192.168.1.1: OK (received=3/3, avg RTT=1.24 ms)
+ping 8.8.8.8: OK (received=3/3, avg RTT=9.87 ms)
 ```
 
----
+## Languages 🌐
 
-## 🗂️ Структура проекта
+| Language | How to enable |
+|---|---|
+| 🇬🇧 English | default / `--lang en` / `LANG_PREFIX=en python3 net_monitor.py` |
+| 🇪🇸 Español | `--lang es` / `LANG_PREFIX=es python3 net_monitor.py` |
 
-```
-Eyes-of-the-Network/
-├── net_monitor.py        # основной скрипт-монитор
-├── logs/
-│   └── session.log       # все логи дублируются сюда (создаётся автоматически)
-├── README_net_monitor.md # краткая инструкция по запуску
-└── README.md             # этот файл
-```
+Docs are available in both languages: [README.md](README.md) (EN) · [README.es.md](README.es.md) (ES)
 
----
+## Update algorithm 🔢
 
-## ❓ FAQ
+Versions follow the format **`X.X.X` (MAJOR.MINOR.PATCH)**:
 
-**Логи пропали из терминала (буфер Termux короткий).**
-Все логи всегда дублируются в `logs/session.log`:
-`cat logs/session.log` или `tail -n 100 logs/session.log`.
+| Version | Type | Meaning |
+|---|---|---|
+| `X.0.0` | 🌋 **Global update** | major rewrite, breaking changes |
+| `0.X.0` | 🚀 **Major update** | new features, backward compatible |
+| `0.0.X` | 🔧 **Mini update** | bug fixes, small improvements |
 
-**Не видно SSID Wi-Fi.**
-Установите приложение **Termux:API** (F-Droid) и пакет `pkg install termux-api`, затем перезапустите скрипт.
+Example flow: `1.0.0 → 1.0.1` (fix) `→ 1.1.0` (new feature) `→ 2.0.0` (global rewrite).
+Current version: **1.1.0** — see the [releases page](../../releases).
 
-**Пакеты `ip` / `ss` / `arp` не найдены.**
-`pkg install iproute2 net-toolsutils`. Скрипт корректно деградирует и без них.
+## FAQ ❓
 
-**Можно ли запускать в фоне?**
-Да: `nohup python net_monitor.py > monitor.out 2>&1 &`.
+**Where are logs stored?** In memory (for `open-list`) and in `logs/session.log` (permanent).
+Logs are never committed to git (see `.gitignore`).
 
-**Нужен ли root?**
-Нет. Все команды работают от обычного пользователя Termux.
+**Do I need root?** No. Some fields (process names in `ss -p`) may be hidden without root.
 
----
+**Why does the ARP section say "unavailable"?** The container/VM may lack `ip neigh` or a real LAN. On a normal Linux host it works out of the box.
 
-## 🔐 Безопасность
+**How do I stop the periodic scans?** Press `Ctrl+C` or type `quit`.
 
-Скрипт **только читает** информацию о сети и выполняет ping-проверки. Он ничего не отправляет наружу, не анализирует трафик других устройств и не требует root-доступа. Используйте мониторинг чужих сетей только там, где это разрешено законом и политикой владельца сети.
+## Security & ethics 🔐
 
----
+This tool only reads information your own OS already exposes locally. It performs
+passive monitoring (no port scanning, no packet injection). Use it only on networks
+you own or have permission to monitor.
 
-## 📄 Лицензия
+## License 📄
 
-MIT — используйте, модифицируйте и распространяйте свободно.
-
----
-
-<div align="center">
-
-**Eyes of the Network** — увидьте свою сеть целиком. 👁️🌐
-
-Made with ❤️ for Termux users
-
-</div>
+[MIT](LICENSE) © 2026 WFStudio-app
