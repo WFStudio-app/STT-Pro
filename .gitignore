@@ -1,4 +1,6 @@
-node_modules/
+# Python compiled files
+__pycache__/
+*.pycnode_modules/
 .next/
 dist/
 build/
