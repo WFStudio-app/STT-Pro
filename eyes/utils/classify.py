@@ -130,6 +130,11 @@ def classify_line(line, ctx=None):
            or (o1 == "192" and o2 == "168") or o1 == "169":
             return "own"
 
+    # special module markers (v1.5.0) — checked BEFORE generic patterns so a
+    # Bluetooth "[B] ERROR ..." line stays blue, not red
+    if low.startswith("[b]"):          # Bluetooth scan lines -> blue marker
+        return "bt"
+
     if _ERROR_PAT.search(low):
         return "error"
     if _MASKED_PAT.search(low):
@@ -138,10 +143,15 @@ def classify_line(line, ctx=None):
         return "warning"
     if _OWN_PAT.search(low):
         return "own"
+
+    if low.startswith("[send]") and ("status   : ok" in low or "finished" in low):
+        return "success"
+    if low.startswith("[cleaner]"):    # cleaner window -> blocked/red
+        return "error"
     return None   # neutral/informational line
 
 
-_SEVERITY = ["error", "masked", "warning", "own", "success"]
+_SEVERITY = ["bt", "error", "masked", "warning", "own", "success"]
 
 
 def categorize_full(text):

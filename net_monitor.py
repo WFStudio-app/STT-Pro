@@ -62,13 +62,17 @@ from eyes.core.colors import C, paint                         # noqa: E402
 from eyes.core.logstore import LogStore, LOG_FILE             # noqa: E402
 from eyes.core.version import VERSION, UPDATE_ALGORITHM       # noqa: E402
 from eyes.modules.snapshot import build_full_log              # noqa: E402
+from eyes.modules.transmitter import send_file               # noqa: E402
+from eyes.modules.cleaner import run_cleaner                 # noqa: E402
+from eyes.modules.blut import scan_bluetooth                 # noqa: E402
+from eyes.modules.gscan import scan_networks                 # noqa: E402
 from eyes.output.exporter import export_csv, export_html, export_json  # noqa: E402
 from eyes.output.rotate import rotate_if_needed               # noqa: E402
 from eyes.output.stats import session_stats                   # noqa: E402
 from eyes.utils import config                                 # noqa: E402
 from eyes.utils.banner import show_banner                     # noqa: E402
-from eyes.utils.classify import (IP_FILTER, categorize_full,  # noqa: E402
-                                 colorize_log, matches_ip_filter,
+from eyes.utils.classify import (IP_FILTER, CATEGORY_COLOR, categorize_full,  # noqa: E402
+                                 classify_line, colorize_log, matches_ip_filter,
                                  parse_filter)
 from eyes.utils.search import search_logs                     # noqa: E402
 
@@ -76,10 +80,10 @@ TR = i18n.TR
 store = LogStore()
 LIVE = {"interval": 1.0, "enabled": True}
 
-HELP_FALLBACK = ("Commands: scan | list | N open-list | /updtime [sec] "
-                 "| /setip [ip|cidr] | stats | export json|csv|html "
-                 "| search <text> | config | version | clear | banner "
-                 "| help | quit")
+HELP_FALLBACK = ("Commands: scan | list | N open-list | back | /updtime [sec] "
+                 "| /setip [ip|cidr] | /onuwifi <file> <ip> | /cleaner | /blut "
+                 "| /g | stats | export json|csv|html | search <text> | config "
+                 "| version | clear | banner | help | quit")
 
 
 def add_log(text):
@@ -184,6 +188,50 @@ def main():
             print(paint(f"config.json -> {os.path.abspath(config.PATH)}", C.CYAN))
             for k in sorted(cfg):
                 print(f"  {k} = {cfg[k]!r}")
+        elif cmd == "back":
+            # exit log-reading view -> return to the main command window
+            show_banner(LIVE["interval"])
+            print(paint(TR["back_ok"], C.CYAN))
+        elif cmd == "/onuwifi":
+            if len(parts) < 2:
+                print(paint(TR["onuwifi_bad"], C.RED))
+            else:
+                path = parts[1]
+                dest = parts[2] if len(parts) > 2 else None
+                print(paint(f"[SEND] {TR['onuwifi_sending']} {path}"
+                            + (f" -> {dest}" if dest else ""), C.CYAN))
+                ok, log_text = send_file(path, dest)
+                n = add_log(log_text)
+                print(colorize_log(log_text,
+                                   "success" if ok else "error"))
+                if n is not None:
+                    print(paint(f"[{TR['log_num']}] #{n}", C.GREEN))
+        elif cmd == "/cleaner":
+            print(paint(TR["cleaner_start"], C.YELLOW))
+            log_text = run_cleaner()
+            n = add_log(log_text)
+            print(colorize_log(log_text, "error"))
+            if n is not None:
+                print(paint(f"[{TR['log_num']}] #{n}", C.GREEN))
+        elif cmd == "/blut":
+            print(paint(TR["blut_start"], C.BLUE))
+            lines = scan_bluetooth()
+            log_text = "\n".join(lines)
+            n = add_log(log_text)
+            for ln in lines:
+                cat = classify_line(ln) or "bt"
+                print(paint(ln, CATEGORY_COLOR.get(cat, C.BLUE)))
+            if n is not None:
+                print(paint(f"[{TR['log_num']}] #{n}", C.GREEN))
+        elif cmd == "/g":
+            print(paint(TR["g_start"], C.CYAN))
+            lines = scan_networks()
+            log_text = "\n".join(lines)
+            n = add_log(log_text)
+            print(paint(log_text, C.CYAN))
+            if n is not None:
+                print(paint(f"[{TR['log_num']}] #{n} | "
+                            f"{TR['g_hint']}", C.GREEN))
         elif cmd == "/updtime":
             if len(parts) != 2:
                 print(paint(f"{TR['updtime_bad']} (current: {LIVE['interval']}s)", C.RED))

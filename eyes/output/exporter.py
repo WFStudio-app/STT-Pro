@@ -41,7 +41,7 @@ _CSS = """
 body{background:#111;color:#ddd;font-family:monospace;margin:20px}
 h1{color:#7df} .log{border-left:4px solid #555;padding:6px 10px;margin:10px 0;white-space:pre-wrap}
 .success{border-color:#3f3}.warning{border-color:#ff3}.error{border-color:#f33}
-.masked{border-color:#f80}.own{border-color:#b5f}
+.masked{border-color:#f80}.own{border-color:#b5f}.bt{border-color:#39f}
 .badge{display:inline-block;padding:1px 8px;border-radius:8px;font-size:12px;background:#333}
 """
 

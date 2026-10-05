@@ -32,12 +32,13 @@ CATEGORY_COLOR = {
     "error": C.RED,
     "masked": C.ORANGE,
     "own": C.PURPLE,
+    "bt": C.BLUE,          # Bluetooth [B] logs -> blue (v1.5.0)
 }
 
 # category -> CSS-friendly name (used by HTML exporter)
 CATEGORY_COLOR_NAME = {
     "success": "success", "warning": "warning", "error": "error",
-    "masked": "masked", "own": "own",
+    "masked": "masked", "own": "own", "bt": "bt",
 }
 
 # OUI prefixes commonly used by randomized / private MAC addresses
@@ -53,6 +54,7 @@ LEGEND = {
         ("RED",    "BLOCKED / FAILED logs"),
         ("ORANGE", "MASKED logs (private MAC / hidden traffic)"),
         ("PURPLE", "YOUR OWN network (local / loopback)"),
+        ("BLUE",   "BLUETOOTH logs ([B] marker)"),
     ],
     "es": [
         ("VERDE",    "registros de ÉXITO"),
@@ -60,6 +62,7 @@ LEGEND = {
         ("ROJO",     "registros BLOQUEADOS/FALLIDOS"),
         ("NARANJA",  "registros ENMASCARADOS (MAC privada / tráfico oculto)"),
         ("MORADO",   "tu PROPIA red (local / loopback)"),
+        ("AZUL",     "registros BLUETOOTH (marcador [B])"),
     ],
 }
 

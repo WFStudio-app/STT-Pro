@@ -12,7 +12,7 @@ def session_stats(store):
         cats = collections.Counter(cat for _, (txt, cat) in store.entries.items())
         total = len(store.entries)
     lines = [f"### {tr['stats_header']}"]
-    order = ["success", "warning", "error", "masked", "own"]
+    order = ["success", "warning", "error", "masked", "own", "bt"]
     for c in order:
         name = tr["categories"].get(c, c).upper()
         lines.append(f"{name:<16}: {cats.get(c, 0)}")

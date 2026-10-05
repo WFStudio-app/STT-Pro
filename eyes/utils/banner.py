@@ -33,7 +33,7 @@ def show_banner(interval=None):
     print(paint(hline("╠", "═", "╣").center(width), C.BLUE))
     legend = " ".join(
         paint(f"■ {tr['categories'][k]}", CATEGORY_COLOR[k])
-        for k in ("success", "own", "warning", "masked", "error"))
+        for k in ("success", "own", "warning", "masked", "error", "bt"))
     print(paint("║ ", C.BLUE) + legend
           + paint(" " * max(0, inner - len(strip_ansi(legend)) - 1) + "║", C.BLUE))
     print(paint(hline("╠", "─", "╣").center(width), C.BLUE))
