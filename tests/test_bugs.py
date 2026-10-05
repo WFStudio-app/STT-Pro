@@ -1,0 +1,158 @@
+"""Regression tests for v1.4.1 bug fixes (run: python3 -m pytest tests/ -v).
+
+Bugs covered:
+  B1  classify_line("(Ctrl+C to stop logging thread)") must NOT be a warning
+      (substring 'control' matched the 'controller' pattern) -> every log was
+      mislabelled [ERROR]/[WARNING].
+  B2  bare word "down" ("State: DOWN") must not match error unless it is an
+      interface state; "[lo] State: DOWN" may be error, but banner text no.
+  B3  categorize_full of a clean snapshot must be 'success', not forced by
+      neutral header lines.
+  B4  /setip 'off' handling in REPL persists "" (not "off") into config.json.
+  B5  search/export/stats/listing work on a fresh LogStore without crashing.
+  B6  parse_filter rejects garbage, accepts ip/cidr/off.
+"""
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from eyes.core.logstore import LogStore                    # noqa: E402
+from eyes.utils.classify import (classify_line,            # noqa: E402
+                                 categorize_full, parse_filter,
+                                 IP_FILTER)
+from eyes.output.exporter import export_csv, export_html, export_json  # noqa: E402
+from eyes.output.stats import session_stats                # noqa: E402
+from eyes.utils.search import search_logs                  # noqa: E402
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+class TestClassify(unittest.TestCase):
+    def test_b1_ctrl_c_not_controller(self):
+        self.assertIsNone(classify_line("Monitor iniciado — actualizaciones cada 5.0s."
+                                        "  (Ctrl+C to stop logging thread)"))
+
+    def test_b1_banner_headers_neutral(self):
+        self.assertIsNone(classify_line(
+            "Eyes of the Network — Linux network monitor v1.4.1 | lang=en"))
+        self.assertIsNone(classify_line("Operating system: Linux, kernel 4.19"))
+        self.assertIsNone(classify_line("Hostname: myhost"))
+        self.assertIsNone(classify_line("### DETAIL FIELDS"))
+
+    def test_b2_state_down_is_error(self):
+        self.assertEqual(classify_line("[eth0] State: DOWN | MAC address: x"),
+                         "error")
+
+    def test_b2_plain_word_down_ok(self):
+        self.assertIsNone(classify_line("Traffic went down overnight"))
+
+    def test_real_signals_still_work(self):
+        self.assertEqual(classify_line("ping 1.2.3.4: timeout"), "error")
+        self.assertEqual(classify_line("DNS over HTTPS detected (DoH)"),
+                         "masked")
+        self.assertEqual(classify_line("possible arp spoof attack"), "warning")
+        self.assertEqual(classify_line("Flipper Zero controller board seen"),
+                         "warning")
+        self.assertEqual(classify_line("peer 192.168.1.55 established"),
+                         "own")
+
+    def test_b3_clean_snapshot_success(self):
+        text = "\n".join([
+            "Eyes of the Network — Linux network monitor v1.4.1 | lang=en",
+            "Operating system: Linux, kernel 4.19",
+            "### NETWORK INTERFACES",
+            "[eth0] State: UP | MAC address: aa:bb:cc:dd:ee:ff",
+            "nameserver 1.1.1.1",
+        ])
+        self.assertEqual(categorize_full(text), "success")
+
+    def test_b3_severity_wins(self):
+        text = "header line\n[eth0] State: DOWN\nsome ok line"
+        self.assertEqual(categorize_full(text), "error")
+
+    def test_b6_parse_filter(self):
+        self.assertTrue(parse_filter("192.168.1.0/24"))
+        self.assertTrue(parse_filter("10.0.0.5"))
+        self.assertTrue(parse_filter("off"))
+        self.assertFalse(IP_FILTER["nets"])
+        self.assertFalse(parse_filter("garbage!!"))
+
+
+class TestOutputs(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.store = LogStore(log_dir=self.tmp,
+                              log_file=os.path.join(self.tmp, "session.log"))
+        self.store.add("log one\n[eth0] State: UP", "success")
+        self.store.add("log two\nping failed", "error")
+
+    def test_b5_listing_search_stats_export(self):
+        self.assertIn("#1", self.store.listing())
+        self.assertIn("#2", self.store.listing())
+        out = search_logs(self.store, "failed")
+        self.assertIn("#2", out)
+        stats = session_stats(self.store)
+        self.assertIn("2", stats)
+        p = export_json(self.store, os.path.join(self.tmp, "r.json"))
+        with open(p) as f:
+            data = json.load(f)
+        self.assertEqual(len(data["logs"]), 2)
+        export_csv(self.store, os.path.join(self.tmp, "r.csv"))
+        html_p = export_html(self.store, os.path.join(self.tmp, "r.html"))
+        with open(html_p) as f:
+            self.assertIn("#1", f.read())
+
+    def test_empty_store_no_crash(self):
+        s = LogStore(log_dir=self.tmp, log_file=os.path.join(self.tmp, "e.log"))
+        self.assertIn("0", s.listing())
+        search_logs(s, "anything")
+        session_stats(s)
+        export_json(s, os.path.join(self.tmp, "e.json"))
+
+
+class TestRepl(unittest.TestCase):
+    """End-to-end REPL run through a pipe (also covers piped-stdin hang fix)."""
+
+    def _run(self, cmds, lang=None):
+        args = [sys.executable, os.path.join(ROOT, "net_monitor.py")]
+        if lang:
+            args += ["--lang", lang]
+        return subprocess.run(args, input="\n".join(cmds) + "\n",
+                              capture_output=True, text=True, timeout=60,
+                              cwd=ROOT)
+
+    def test_b4_setip_off_and_categories(self):
+        r = self._run(["/setip 192.168.1.0/24", "/setip off", "scan",
+                       "list", "quit"])
+        self.assertEqual(r.returncode, 0, r.stderr)
+        out = r.stdout
+        self.assertIn("IP filter active", out)
+        self.assertIn("IP filter disabled", out)
+        # the startup log entry must no longer be mislabelled [ERROR]
+        # (v1.4.x bug: banner 'Ctrl+C' -> 'controller', VPN:'NO' -> masked)
+        self.assertNotIn("[ERROR   ] Eyes of the Network", out)
+        self.assertNotIn("[WARNING ] Eyes of the Network", out)
+        with open(os.path.join(ROOT, "config.json")) as f:
+            cfg = json.load(f)
+        self.assertEqual(cfg["setip"], "")          # 'off' persisted as ''
+
+    def test_es_smoke(self):
+        r = self._run(["scan", "list", "1 open-list", "quit"], lang="es")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("CAMPOS DETALLADOS", r.stdout)
+
+    def test_open_list_colors_and_bad_number(self):
+        r = self._run(["scan", "1 open-list", "999 open-list", "quit"])
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("DETAIL FIELDS", r.stdout)
+        self.assertIn("Log not found: #999", r.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

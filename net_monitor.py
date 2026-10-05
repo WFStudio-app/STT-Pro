@@ -119,6 +119,10 @@ def main():
     if config.get("setip"):
         parse_filter(str(config.get("setip")))
 
+    # live logging only in an interactive terminal; when input is piped
+    # (scripts/tests) the thread would spin unthrottled — use 'scan' cmd
+    LIVE["enabled"] = sys.stdin.isatty() and sys.stdout.isatty()
+
     show_banner(LIVE["interval"])
     add_log(build_full_log())
 
@@ -196,15 +200,17 @@ def main():
         elif cmd == "/setip":
             if len(parts) != 2:
                 print(paint(TR["filter_bad"], C.RED))
-            elif not parse_filter(parts[1]):
-                print(paint(TR["filter_bad"], C.RED))
             else:
-                spec = "" if not IP_FILTER["nets"] else parts[1]
-                config.set_and_save("setip", spec)
-                if not IP_FILTER["nets"]:
-                    print(paint(TR["filter_off"], C.PURPLE))
+                off = parts[1].lower() in ("off", "none", "clear")
+                if not parse_filter(parts[1]):
+                    print(paint(TR["filter_bad"], C.RED))
                 else:
-                    print(paint(f"{TR['filter_on']}: {IP_FILTER['nets'][0]}", C.GREEN))
+                    spec = "" if off or not IP_FILTER["nets"] else parts[1]
+                    config.set_and_save("setip", spec)
+                    if not IP_FILTER["nets"]:
+                        print(paint(TR["filter_off"], C.PURPLE))
+                    else:
+                        print(paint(f"{TR['filter_on']}: {IP_FILTER['nets'][0]}", C.GREEN))
         else:
             m = re.match(r"^(\d+)\s+open-list$", low)
             if m:

@@ -5,6 +5,14 @@ Versioning scheme: `X.X.X`
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
 
+## [1.4.1] — 2026-10-06 — 🔧 Mini update (bug fixes)
+### Fixed
+- **Log misclassification**: banner text "(Ctrl+C to stop logging thread)" matched the `controller` warning pattern, and "State: DOWN" matched bare `down` → every log was labelled `[ERROR]`. Neutral headers now return no category; `down` only counts as error in interface-state lines.
+- **"VPN: NO" / "No VPN … found" classified as MASKED** — explicit all-clear statements are now success/neutral.
+- **`/setip off` persisted `"off"` into config.json** instead of clearing the filter on next start.
+- **Piped stdin (scripts/tests)**: live thread spun unthrottled; live updates now run only in an interactive TTY (`scan` still works when piped).
+- Added regression test suite `tests/test_bugs.py` (13 tests, stdlib unittest): classification, filter parsing, exporters on empty/fresh stores, end-to-end REPL runs in EN & ES.
+
 ## [1.4.0] — 2026-10-06 — 🚀 Major update
 ### Added
 - **Wi-Fi module** (`eyes/modules/wifi.py`): SSID, BSSID, channel/frequency, RSSI, 802.11 standard

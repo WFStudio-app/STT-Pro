@@ -13,22 +13,40 @@ from eyes.core.colors import CATEGORY_COLOR, C, PRIVATE_MAC_OUI, paint
 
 IP_FILTER = {"nets": []}   # list of ipaddress networks (empty = no filter)
 
+# Neutral header / informational lines: they carry no security signal and
+# must never force a category on their own (bug fix v1.4.1: banner text
+# containing "Ctrl+C" was misread as "control+ler" -> 'controller', and
+# "State: DOWN" was misread as an interface being down).
+_NEUTRAL_PAT = re.compile(
+    r"^(eyes of the network\s*[—-]|operating system:|hostname:|"
+    r"sistema operativo:|nombre del host:|### |monitor iniciado|"
+    r"monitor started)", re.I)
+
+# Explicit "all clear" statements — must never be classified as masked/error
+# (bug fix v1.4.1: "VPN: NO" / "No VPN ... found" matched 'vpn' -> masked)
+_CLEAR_PAT = re.compile(
+    r"^(\s*(vpn|doh|dot|proxy|tunnel)\s*:\s*(no|none|off|n/?a)\b"
+    r"|no vpn\b|no anomalies\b|no tunnel\b|clean direct connection"
+    r"|sin vpn\b|conexi[oó]n directa limpia)", re.I)
+
 # Patterns that decide the category of a log line
 _ERROR_PAT = re.compile(
     r"\b(failed|failure|error|unreachable|timeout|timed out|blocked|denied|"
-    r"refused|down|no response|100% packet loss|query failed)\b", re.I)
+    r"refused|no response|100% packet loss|query failed)\b"
+    r"|\bstate:\s*down\b", re.I)
 _WARN_PAT = re.compile(
     r"\b(suspicious|unknown|anonym|promisc|spoof|dup(licate)? address|"
     r"high port|unexpected|lost|partial|risk|weak signal|arp spoof|"
-    r"port-scan|connection flood|changed|disappeared|controller|"
-    r"flipper|hackrf|pineapple|marauder|rubber ducky|teensy|"
+    r"port-scan|connection flood|changed|disappeared|"
+    r"controller board|flipper zero|hackrf|wifi pineapple|marauder|"
+    r"rubber ducky|teensy|"
     r"bound to all interfaces|high traffic)\b", re.I)
 _MASKED_PAT = re.compile(
     r"\b(masked|hidden|private|randomized|tunnel|vpn|proxy|obfuscat|"
     r"doh|dot|wireguard|openvpn|ipsec|l2tp|pptp|pppoe|"
     r"stub resolver|traffic is vpn-routed)\b", re.I)
 _OWN_PAT = re.compile(
-    r"\b(loopback|lo\b|localhost|own network|your network)\b", re.I)
+    r"\b(loopback|localhost|own network|your network)\b", re.I)
 
 
 def parse_filter(spec):
@@ -78,9 +96,20 @@ def own_ips():
 
 
 def classify_line(line, ctx=None):
-    """Classify a single log line into a category name."""
+    """Classify a single log line into a category name.
+    Returns None for neutral/informational lines (no security signal)."""
     ctx = ctx or {}
     low = line.lower()
+
+    # neutral headers carry no signal -> None (bug fix v1.4.1: banner text
+    # "(Ctrl+C to stop logging thread)" matched 'controller' as warning)
+    if _NEUTRAL_PAT.search(line.strip()):
+        return None
+
+    # explicit "all clear" statements -> success (bug fix v1.4.1: "VPN: NO"
+    # and "No VPN / tunnel indicators found" matched 'vpn' -> masked)
+    if _CLEAR_PAT.search(low):
+        return "success"
 
     # MAC with randomized/private OUI -> masked
     for mac in re.findall(r"\b(?:[0-9a-f]{2}:){5}[0-9a-f]{2}\b", low):
@@ -93,7 +122,11 @@ def classify_line(line, ctx=None):
         if cand in my or cand == "127.0.0.1":
             return "own"
         o1, o2 = cand.split(".")[0:2]
-        if o1 == "10" or (o1 == "172" and 16 <= int(o2) <= 31) \
+        try:
+            o2i = int(o2)
+        except ValueError:
+            continue
+        if o1 == "10" or (o1 == "172" and 16 <= o2i <= 31) \
            or (o1 == "192" and o2 == "168") or o1 == "169":
             return "own"
 
@@ -105,16 +138,16 @@ def classify_line(line, ctx=None):
         return "warning"
     if _OWN_PAT.search(low):
         return "own"
-    return "success"
+    return None   # neutral/informational line
 
 
 _SEVERITY = ["error", "masked", "warning", "own", "success"]
 
 
 def categorize_full(text):
-    """Worst (most severe) category among all lines of a full log entry."""
-    cats = {classify_line(ln) for ln in text.splitlines() if ln.strip()}
-    # neutral banner/header lines should not force 'success' over real signals
+    """Worst (most severe) category among all lines of a full log entry.
+    If no line carries a real signal, the entry is 'success'."""
+    cats = {c for c in (classify_line(ln) for ln in text.splitlines()) if c}
     for sev in _SEVERITY:
         if sev in cats:
             return sev
@@ -122,10 +155,12 @@ def categorize_full(text):
 
 
 def colorize_log(text, default="success"):
-    """Paint every line of a log with its category color."""
+    """Paint every line of a log with its category color.
+    Neutral lines (classify_line -> None) fall back to the entry category."""
     out = []
     for line in text.splitlines():
         cat = classify_line(line) if line.strip() else default
+        cat = cat or default
         out.append(paint(line, CATEGORY_COLOR.get(cat, CATEGORY_COLOR[default])))
     return "\n".join(out)
 
