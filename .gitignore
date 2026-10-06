@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 logs/
 config.json
+node_modules/
+.next/
+dist/
+build/
+*.log
