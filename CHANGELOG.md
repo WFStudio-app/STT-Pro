@@ -5,6 +5,21 @@ Versioning scheme: `X.X.X`
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
 
+## [1.5.0] — 2026-10-06 — 🚀 Major update (new commands)
+### Added
+- **`back`** — exit full-log view (`N open-list`) and return to the main menu
+- **`/onuwifi [path] <ip>`** (`eyes/modules/transmitter.py`) — send a file over the network; writes a transfer summary + numbered log entry with status, size and destination
+- **`/cleaner`** (`eyes/modules/cleaner.py`) — completely blocks network file send/receive for 5 seconds; logged as 🔴 blocked event
+- **`/blut`** (`eyes/modules/blut.py`) — scan nearby Bluetooth devices; every line prefixed with blue **[B]**
+- **`/g`** (`eyes/modules/gscan.py`) — scan surrounding networks and list reachable targets you may send requests to
+
+## [1.5.1] — 2026-10-06 — 🔧 Mini update (bug fixes)
+### Fixed
+- False `[ERROR]` on interface-state lines like "[lo]/[dummy0] State: DOWN" — neutral down/unavailable patterns now excluded from classification
+- Strings "unavailable"/"empty" no longer produce spurious errors in `/blut`, `/g`, wifi scans
+- Spanish log line "INACTIVA" covered by the same neutral-down rule
+- Regression tests added: 19 unittest tests total (`tests/test_bugs.py`), all passing
+
 ## [1.4.1] — 2026-10-06 — 🔧 Mini update (bug fixes)
 ### Fixed
 - **Log misclassification**: banner text "(Ctrl+C to stop logging thread)" matched the `controller` warning pattern, and "State: DOWN" matched bare `down` → every log was labelled `[ERROR]`. Neutral headers now return no category; `down` only counts as error in interface-state lines.

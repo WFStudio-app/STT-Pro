@@ -1,7 +1,4 @@
 __pycache__/
-logs/node_modules/
-.next/
-dist/
-build/
-*.log
-node_modules/
+*.pyc
+logs/
+config.json
