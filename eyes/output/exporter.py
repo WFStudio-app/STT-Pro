@@ -49,9 +49,9 @@ h1{color:#7df} .log{border-left:4px solid #555;padding:6px 10px;margin:10px 0;wh
 def export_html(store, path="logs/report.html"):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     parts = ["<!doctype html><meta charset='utf-8'>",
-             "<title>Eyes of the Network — report</title>",
+             "<title>STT Pro — report</title>",
              f"<style>{_CSS}</style>",
-             f"<h1>Eyes of the Network — log report ({datetime.now():%Y-%m-%d %H:%M})</h1>"]
+             f"<h1>STT Pro — log report ({datetime.now():%Y-%m-%d %H:%M})</h1>"]
     for n, cat, text in _rows(store):
         color = CATEGORY_COLOR_NAME.get(cat, "success")
         parts.append(f"<div class='log {color}'><span class='badge'>#{n} "

@@ -1,4 +1,4 @@
-"""Internationalization (English / Spanish) for Eyes of the Network.
+"""Internationalization (English / Spanish) for STT Pro.
 
 Usage:
     from eyes.core import i18n
@@ -32,7 +32,7 @@ def detect_lang(argv=None):
 MODE_TEXTS = {
     "en": {
         "q_title": "SELECT OPERATION MODE",
-        "q_line": "What will Eyes of the Network be used for?",
+        "q_line": "What will STT Pro be used for?",
         "personal": "1 - Personal use   (standard monitor)",
         "server":   "2 - Server         (+ AI neural-network log chat: /ai_api, ask)",
         "ask":      "Choose [1/2] (default 1): ",
@@ -43,7 +43,7 @@ MODE_TEXTS = {
     },
     "es": {
         "q_title": "ELIGE EL MODO DE OPERACIÓN",
-        "q_line": "¿Para qué se usará Eyes of the Network?",
+        "q_line": "¿Para qué se usará STT Pro?",
         "personal": "1 - Uso personal   (monitor estándar)",
         "server":   "2 - Servidor       (+ chat de logs con IA: /ai_api, ask)",
         "ask":      "Elige [1/2] (por defecto 1): ",
@@ -71,7 +71,7 @@ def mode_window(lang="en"):
 
 T = {
     "en": {
-        "title": "Eyes of the Network — Linux network monitor",
+        "title": "STT Pro — Linux network monitor",
         "started": "Monitor started — live updates every {interval}s.",
         "iface_header": "NETWORK INTERFACES",
         "addresses": "IP addresses",
@@ -164,7 +164,7 @@ T = {
         ],
     },
     "es": {
-        "title": "Eyes of the Network — Monitor de red para Linux",
+        "title": "STT Pro — Monitor de red para Linux",
         "started": "Monitor iniciado — actualizaciones cada {interval}s.",
         "iface_header": "INTERFACES DE RED",
         "addresses": "Direcciones IP",

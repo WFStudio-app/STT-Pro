@@ -1,4 +1,4 @@
-# 👁️ Eyes of the Network
+# 🛰️ STT Pro
 
 > [EN](README.md) · **ES**
 
@@ -8,7 +8,7 @@
 [![Licencia](https://img.shields.io/badge/licencia-MIT-green)](LICENSE)
 [![Idiomas](https://img.shields.io/badge/idiomas-EN%20|%20ES-lightgrey)]()
 
-**Eyes of the Network** es un monitor de red ligero para terminal en **Linux**.
+**STT Pro** es un monitor de red ligero para terminal en **Linux**.
 Captura toda la información de la red a la que está conectado tu dispositivo —
 interfaces, direcciones IP/MAC, DNS, tabla de enrutamiento, vecinos ARP, conexiones
 TCP/UDP activas y comprobaciones de alcance — y guarda cada instantánea como un
@@ -61,8 +61,8 @@ TCP/UDP activas y comprobaciones de alcance — y guarda cada instantánea como 
 
 ```bash
 # 1. Clona o descarga el repositorio
-git clone https://github.com/WFStudio-app/Eyes-of-the-Network.git
-cd Eyes-of-the-Network
+git clone https://github.com/WFStudio-app/STT-Pro.git
+cd STT-Pro
 
 # 2. Ejecútalo (español):
 python3 net_monitor.py --lang es
@@ -104,7 +104,7 @@ segundo** automáticamente. Usa `/updtime 5` para reducir la frecuencia o
 
 ```
 ===== LOG #1 | 2026-10-05 14:22:31 | [ÉXITO] =====
-Eyes of the Network v1.2.0 | lang=es
+STT Pro v1.2.0 | lang=es
 Sistema operativo: Linux, kernel 6.8.0-45-generic
 Nombre del host: thinkpad
 
@@ -181,7 +181,7 @@ paquetes). Úsala solo en redes que te pertenezcan o que tengas permiso de monit
 ## 📂 Estructura del proyecto
 
 ```
-Eyes-of-the-Network/
+STT-Pro/
 ├── net_monitor.py            # punto de entrada (REPL + hilo en vivo)
 ├── eyes/
 │   ├── core/                 # version.py · i18n.py · colors.py · logstore.py

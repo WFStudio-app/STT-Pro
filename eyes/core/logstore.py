@@ -1,4 +1,4 @@
-"""Numbered log storage with file persistence for Eyes of the Network."""
+"""Numbered log storage with file persistence for STT Pro."""
 
 import os
 import threading

@@ -1,9 +1,9 @@
-# Architecture — Eyes of the Network
+# Architecture — STT Pro
 
 Project layout: every function lives in its own file, grouped by folders.
 
 ```
-Eyes-of-the-Network/
+STT-Pro/
 ├── net_monitor.py            # entry point (REPL + live thread)
 ├── eyes/                     # main package
 │   ├── core/                 # foundation layer

@@ -18,9 +18,9 @@ IP_FILTER = {"nets": []}   # list of ipaddress networks (empty = no filter)
 # containing "Ctrl+C" was misread as "control+ler" -> 'controller', and
 # "State: DOWN" was misread as an interface being down).
 _NEUTRAL_PAT = re.compile(
-    r"^(eyes of the network\s*[—-]|operating system:|hostname:|"
+    r"^(stt pro\s*[—-]|operating system:|hostname:|"
     r"sistema operativo:|nombre del host:|### |monitor iniciado|"
-    r"monitor started)", re.I)
+    r"monitor started|===== log #)", re.I)
 
 # Explicit "all clear" statements — must never be classified as masked/error
 # (bug fix v1.4.1: "VPN: NO" / "No VPN ... found" matched 'vpn' -> masked)

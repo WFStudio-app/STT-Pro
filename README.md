@@ -1,4 +1,4 @@
-# 👁️ Eyes of the Network
+# 🛰️ STT Pro
 
 > **EN** · [ES](README.es.md)
 
@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Langs](https://img.shields.io/badge/languages-EN%20|%20ES-lightgrey)]()
 
-**Eyes of the Network** is a lightweight terminal network monitor for **Linux**.
+**STT Pro** is a lightweight terminal network monitor for **Linux**.
 It captures everything about the network your device is connected to — interfaces,
 IP/MAC addresses, DNS, routing table, ARP neighbors, active TCP/UDP connections and
 reachability checks — and stores every snapshot as a **numbered detailed log** right
@@ -61,8 +61,8 @@ number: `42 open-list`. 🎯
 
 ```bash
 # 1. Clone or download the repo
-git clone https://github.com/WFStudio-app/Eyes-of-the-Network.git
-cd Eyes-of-the-Network
+git clone https://github.com/WFStudio-app/STT-Pro.git
+cd STT-Pro
 
 # 2. Run it (English by default)
 python3 net_monitor.py
@@ -108,7 +108,7 @@ Type commands at the `>` prompt.
 
 ```
 ===== LOG #1 | 2026-10-05 14:22:31 | [SUCCESS] =====
-Eyes of the Network v1.2.0 | lang=en
+STT Pro v1.2.0 | lang=en
 Operating system: Linux, kernel 6.8.0-45-generic
 Hostname: thinkpad
 
@@ -185,7 +185,7 @@ you own or have permission to monitor.
 ## 📂 Project structure
 
 ```
-Eyes-of-the-Network/
+STT-Pro/
 ├── net_monitor.py            # entry point (REPL + live thread)
 ├── eyes/
 │   ├── core/                 # version.py · i18n.py · colors.py · logstore.py

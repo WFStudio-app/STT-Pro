@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-net_monitor.py — Eyes of the Network (modular entry point)
+net_monitor.py — STT Pro (modular entry point)
 
 Network monitor for Linux. Reads information about the network the device is
 connected to (interfaces, Wi-Fi, IP, DNS source, routes, ARP neighbors, ports,
@@ -214,7 +214,7 @@ def main():
         elif cmd == "list":
             print(store.listing())
         elif cmd == "version":
-            print(f"Eyes of the Network v{VERSION}\n{UPDATE_ALGORITHM}")
+            print(f"STT Pro v{VERSION}\n{UPDATE_ALGORITHM}")
         elif cmd == "clear":
             store.clear()
             print(paint("OK", C.GREEN))

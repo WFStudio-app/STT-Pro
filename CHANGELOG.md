@@ -1,9 +1,17 @@
-# Changelog — Eyes of the Network
+# Changelog — STT Pro
 
 Versioning scheme: `X.X.X`
 - **X.0.0** — Global update (major rewrite, breaking changes)
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
+
+## [1.6.3] — 2026-10-07 — 🔧 Mini update (rename to STT Pro)
+### Changed
+- **Project renamed** from "Eyes of the Network" to **STT Pro** (server-oriented tool):
+  repo, README headers, banners, i18n strings, docs, examples and tests updated
+### Fixed
+- Log header line `===== LOG #N ... =====` was self-classified as ERROR when a
+  previous category was written into it — headers are now neutral in classify
 
 ## [1.6.2] — 2026-10-06 — 🔧 Mini update (new log format & /linfo)
 ### Added

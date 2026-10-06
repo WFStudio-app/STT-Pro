@@ -1,6 +1,6 @@
 
 ===== LOG #1 [2026-10-05 16:37:59] [ERROR] =====
-Eyes of the Network — Linux network monitor v1.3.0 | lang=en
+STT Pro — Linux network monitor v1.3.0 | lang=en
 Operating system: Linux, kernel 4.19.91-c8dfc93.al7.x86_64
 Hostname: c-6ac3c35b-01ed1602-b82d7433de3b
 
@@ -27,7 +27,7 @@ Default gateway: ?
 ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
 
 ===== LOG #2 [2026-10-05 16:37:59] [ERROR] =====
-Eyes of the Network — Linux network monitor v1.3.0 | lang=en
+STT Pro — Linux network monitor v1.3.0 | lang=en
 Operating system: Linux, kernel 4.19.91-c8dfc93.al7.x86_64
 Hostname: c-6ac3c35b-01ed1602-b82d7433de3b
 
@@ -54,7 +54,7 @@ Default gateway: ?
 ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
 
 ===== LOG #3 [2026-10-05 16:37:59] [ERROR] =====
-Eyes of the Network — Linux network monitor v1.3.0 | lang=en
+STT Pro — Linux network monitor v1.3.0 | lang=en
 Operating system: Linux, kernel 4.19.91-c8dfc93.al7.x86_64
 Hostname: c-6ac3c35b-01ed1602-b82d7433de3b
 

@@ -40,7 +40,7 @@ class TestClassify(unittest.TestCase):
 
     def test_b1_banner_headers_neutral(self):
         self.assertIsNone(classify_line(
-            "Eyes of the Network — Linux network monitor v1.4.1 | lang=en"))
+            "STT Pro — Linux network monitor v1.4.1 | lang=en"))
         self.assertIsNone(classify_line("Operating system: Linux, kernel 4.19"))
         self.assertIsNone(classify_line("Hostname: myhost"))
         self.assertIsNone(classify_line("### DETAIL FIELDS"))
@@ -64,7 +64,7 @@ class TestClassify(unittest.TestCase):
 
     def test_b3_clean_snapshot_success(self):
         text = "\n".join([
-            "Eyes of the Network — Linux network monitor v1.4.1 | lang=en",
+            "STT Pro — Linux network monitor v1.4.1 | lang=en",
             "Operating system: Linux, kernel 4.19",
             "### NETWORK INTERFACES",
             "[eth0] State: UP | MAC address: aa:bb:cc:dd:ee:ff",
@@ -136,8 +136,8 @@ class TestRepl(unittest.TestCase):
         self.assertIn("IP filter disabled", out)
         # the startup log entry must no longer be mislabelled [ERROR]
         # (v1.4.x bug: banner 'Ctrl+C' -> 'controller', VPN:'NO' -> masked)
-        self.assertNotIn("[ERROR   ] Eyes of the Network", out)
-        self.assertNotIn("[WARNING ] Eyes of the Network", out)
+        self.assertNotIn("[ERROR   ] STT Pro", out)
+        self.assertNotIn("[WARNING ] STT Pro", out)
         with open(os.path.join(ROOT, "config.json")) as f:
             cfg = json.load(f)
         self.assertEqual(cfg["setip"], "")          # 'off' persisted as ''
