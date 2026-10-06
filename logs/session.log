@@ -1,0 +1,65 @@
+
+===== LOG #1 [2026-10-06 19:38:31] [ERROR] =====
+STT Pro — Linux network monitor v1.6.3 | lang=en
+Operating system: Linux, kernel 4.19.91-c8dfc93.al7.x86_64
+Hostname: c-6ac54a67-01ed1602-0354c65c057a
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 32:f1:80:76:96:ad
+OS: local: Linux 4.19.91-c8dfc93.al7.x86_64
+
+### NETWORK INTERFACES
+[eth0] State: UP | MAC address: 32:f1:80:76:96:ad
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:35236
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 2 interfaces)
