@@ -29,11 +29,25 @@ _CLEAR_PAT = re.compile(
     r"|no vpn\b|no anomalies\b|no tunnel\b|clean direct connection"
     r"|sin vpn\b|conexi[oó]n directa limpia)", re.I)
 
+# Inactive / administrative-down interfaces are normal housekeeping info
+# (lo, dummy0...), not failures — bug fix v1.5.1: "[lo] State: DOWN" was
+# misread as a blocked interface and forced every snapshot to [ERROR].
+_NEUTRAL_DOWN_PAT = re.compile(
+    r"\[(lo|dummy\d*|tap\d*|veth.*|br-\w+)\]\s+state:\s*down\b"
+    r"|\bstate:\s*(inactiv|desactivad)", re.I)
+
 # Patterns that decide the category of a log line
 _ERROR_PAT = re.compile(
     r"\b(failed|failure|error|unreachable|timeout|timed out|blocked|denied|"
     r"refused|no response|100% packet loss|query failed)\b"
     r"|\bstate:\s*down\b", re.I)
+
+# "not available / unavailable / empty table" are informational gaps (missing
+# tools, empty ARP), not failures — bug fix v1.5.1: they matched 'unavailable'
+# inside _ERROR_PAT words and turned every snapshot red. Checked before errors.
+_INFO_MISS_PAT = re.compile(
+    r"\b(unavailable|not available|empty\b|no .*found|information missing"
+    r"|недоступн|no disponible)\b", re.I)
 _WARN_PAT = re.compile(
     r"\b(suspicious|unknown|anonym|promisc|spoof|dup(licate)? address|"
     r"high port|unexpected|lost|partial|risk|weak signal|arp spoof|"
@@ -106,10 +120,23 @@ def classify_line(line, ctx=None):
     if _NEUTRAL_PAT.search(line.strip()):
         return None
 
+    # inactive housekeeping interfaces (lo/dummy/tap...) -> neutral, not error
+    # (bug fix v1.5.1: "[lo] State: DOWN" forced [ERROR] on every snapshot)
+    if _NEUTRAL_DOWN_PAT.search(low):
+        return None
+
     # explicit "all clear" statements -> success (bug fix v1.4.1: "VPN: NO"
     # and "No VPN / tunnel indicators found" matched 'vpn' -> masked)
     if _CLEAR_PAT.search(low):
         return "success"
+
+    # "not available / unavailable / empty table" are informational gaps
+    # (missing tools, empty ARP), not failures — bug fix v1.5.1: such lines
+    # matched _ERROR_PAT and turned every snapshot red. Checked before errors;
+    # genuine failures ("FAIL", "Status: FAILED") still classify as error.
+    if _INFO_MISS_PAT.search(low) and not re.search(
+            r"\bfail(ed)?\b|\berror\b|100% packet loss", low):
+        return None
 
     # MAC with randomized/private OUI -> masked
     for mac in re.findall(r"\b(?:[0-9a-f]{2}:){5}[0-9a-f]{2}\b", low):

@@ -154,5 +154,83 @@ class TestRepl(unittest.TestCase):
         self.assertIn("Log not found: #999", r.stdout)
 
 
+class TestV15Bugs(unittest.TestCase):
+    """v1.5.1 fixes — logs about the new commands must be classified right."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+
+    def _run(self, cmds, lang=None):
+        args = [sys.executable, os.path.join(ROOT, "net_monitor.py")]
+        if lang:
+            args += ["--lang", lang]
+        return subprocess.run(args, input="\n".join(cmds) + "\n",
+                              capture_output=True, text=True, timeout=120,
+                              cwd=self.tmp)
+
+    def test_lo_down_is_neutral(self):
+        # v1.5.0 bug: "[lo] State: DOWN" / "[dummy0] State: DOWN" matched the
+        # error pattern and forced EVERY snapshot to [ERROR].
+        self.assertIsNone(classify_line("[lo] State: DOWN | MAC address: x"))
+        self.assertIsNone(classify_line("[dummy0] State: DOWN | MAC: y"))
+        self.assertIsNone(classify_line("Estado: INACTIVA"))
+        # a real interface going down is still an error
+        self.assertEqual(classify_line("[eth0] State: DOWN"), "error")
+
+    def test_unavailable_lines_are_neutral(self):
+        # v1.5.0 bug: 'unavailable' in info lines was treated as failure
+        self.assertIsNone(classify_line(
+            "Wi-Fi information unavailable (no iw / nmcli)"))
+        self.assertIsNone(classify_line("(ARP table empty / unavailable)"))
+        # genuine failures still red
+        self.assertEqual(classify_line(
+            "ping 8.8.8.8: FAIL (unreachable / blocked)"), "error")
+
+    def test_send_success_log_not_purple(self):
+        # v1.5.0 bug: private/OUI MAC inside the destination path made a
+        # successful [SEND] transfer log show up as [OWN] (purple)
+        ok, text = None, None
+        from eyes.modules.transmitter import send_file
+        p = os.path.join(self.tmp, "f.txt")
+        with open(p, "w") as f:
+            f.write("x" * 100)
+        ok, text = send_file(p, "192.0.2.7")       # TEST-NET ip: no listener
+        self.assertTrue(ok)
+        cat = categorize_full(text)
+        self.assertNotEqual(cat, "own")
+        self.assertNotEqual(cat, "masked")
+        self.assertIn("[SEND]", text)
+
+    def test_bt_error_stays_blue(self):
+        # Bluetooth errors keep the blue [B] category (not red)
+        self.assertEqual(classify_line(
+            "[B] ERROR: no Bluetooth stack found"), "bt")
+
+    def test_new_commands_repl_end_to_end(self):
+        # every command must run without crashing AND store its own numbered
+        # log (the user-visible proof that the action happened)
+        r = self._run(["/onuwifi",                       # usage hint
+                       "/blut",                          # bt scan (blue)
+                       "/g",                             # network scan
+                       "back",                           # back to menu
+                       "list", "quit"])
+        self.assertEqual(r.returncode, 0, r.stderr)
+        out = r.stdout
+        self.assertIn("Usage: /onuwifi", out)           # bad-arg message
+        self.assertIn("[B] BLUETOOTH SCAN STARTED", out)
+        self.assertIn("[G] NETWORK SCAN", out)
+        self.assertIn("main menu", out)                 # back -> banner/menu
+        # each of /blut and /g produced a stored log number
+        self.assertGreaterEqual(out.count("Log stored"), 2)
+        # and they appear in the numbered listing
+        self.assertIn("#", out)
+
+    def test_onuwifi_bad_path_is_error_red(self):
+        r = self._run(["/onuwifi /definitely/not/here 10.0.0.1", "list", "quit"])
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("file not found", r.stdout)
+        self.assertIn("[ERROR", r.stdout)               # logged as error entry
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

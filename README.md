@@ -85,6 +85,15 @@ Type commands at the `>` prompt.
 | `/setip [ip\|cidr]` | filter logs by IP or network, e.g. `/setip 192.168.1.7` or `/setip 10.0.0.0/8`; `/setip off` disables |
 | `list` | numbered list of all captured logs |
 | `N open-list` | open the **full detailed log** number N (e.g. `3 open-list`) |
+| `back` | return from log-reading view to the main menu / command window |
+| `/onuwifi [path] <ip>` | send a file over the network + transfer summary log |
+| `/cleaner` | block network file send/receive for 5 seconds (logged as BLOCKED) |
+| `/blut` | scan nearby Bluetooth devices — every line prefixed blue `[B]` |
+| `/g` | scan surrounding networks & list reachable targets for requests |
+| `stats` | session statistics per log color |
+| `export [json\|csv\|html]` | export all logs to a report file |
+| `search <text\|regex>` | find logs containing text/regex |
+| `config` | show/save persistent config.json |
 | `version` | program version + update algorithm |
 | `clear` | clear log history in memory |
 | `banner` | show the command window again |
