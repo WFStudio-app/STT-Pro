@@ -5,6 +5,11 @@ Versioning scheme: `X.X.X`
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
 
+## [1.6.2] — 2026-10-06 — 🔧 Mini update (new log format & /linfo)
+### Added
+- **New list format** for `list`: `[№] (name) (address) (type) (memory MB)` per entry
+- **`/linfo [N]`** — opens the full info of one log: metadata header + entire colored body
+
 ## [1.6.0] — 2026-10-06 — 🚀 Major update (modes, AI log chat, log trimming)
 ### Added
 - **Startup mode selection window** — pretty boxed dialog: `1 - Personal use` or `2 - Server`; choice saved to config.json (`"mode"`)

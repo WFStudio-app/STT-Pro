@@ -84,10 +84,29 @@ LOGD = {"max": 50}            # /logd: delete oldest logs after every N stored
 MODE = {"name": "personal"}   # "personal" | "server" (AI chat extras)
 AI = {"base": None, "key": ""}
 
-HELP_FALLBACK = ("Commands: scan | list | N open-list | back | /updtime [sec] "
-                 "| /setip [ip|cidr] | /onuwifi <file> <ip> | /cleaner | /blut "
-                 "| /g | stats | export json|csv|html | search <text> | config "
-                 "| version | clear | banner | help | quit")
+HELP_FALLBACK = ("Commands: scan | list | N open-list | /linfo [N] | back "
+                 "| /updtime [sec] | /setip [ip|cidr] | /onuwifi <file> <ip> "
+                 "| /cleaner | /blut | /g | stats | export json|csv|html "
+                 "| search <text> | config | version | clear | banner "
+                 "| help | quit")
+
+
+def show_log_info(n):
+    """/linfo [N] — full metadata + complete body of one log entry."""
+    meta = store.meta(n)
+    if meta is None:
+        print(paint(f"{TR['not_found']}: #{n}", C.RED))
+        return
+    entry = store.get(n)
+    text, cat = entry
+    color = CATEGORY_COLOR.get(cat, C.GREEN)
+    print(paint("=" * 60, C.BOLD))
+    print(paint(f"[{meta['number']}] ({meta['name']}) "
+                f"({meta['address']}) ({meta['type']}) "
+                f"({meta['size_mb']} MB)", color))
+    print(paint("=" * 60, C.BOLD))
+    print(colorize_log(text, cat))
+    print(paint(f"\n({TR['log_saved']} {os.path.abspath(LOG_FILE)})", C.DIM))
 
 
 def add_log(text):
@@ -219,6 +238,14 @@ def main():
                 print(paint("Usage: search <text|regex>", C.RED))
             else:
                 print(search_logs(store, " ".join(parts[1:])))
+        elif cmd == "/linfo":
+            if len(parts) < 2:
+                print(paint("Usage: /linfo [log number]", C.RED))
+            else:
+                try:
+                    show_log_info(int(parts[1]))
+                except ValueError:
+                    print(paint("Usage: /linfo [log number]", C.RED))
         elif cmd == "config":
             config.set_and_save("updtime", LIVE["interval"])
             cfg = config.CFG

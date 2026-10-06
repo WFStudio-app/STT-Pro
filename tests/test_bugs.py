@@ -93,8 +93,8 @@ class TestOutputs(unittest.TestCase):
         self.store.add("log two\nping failed", "error")
 
     def test_b5_listing_search_stats_export(self):
-        self.assertIn("#1", self.store.listing())
-        self.assertIn("#2", self.store.listing())
+        self.assertIn("[1] (log one)", self.store.listing())
+        self.assertIn("[2] (log two)", self.store.listing())
         out = search_logs(self.store, "failed")
         self.assertIn("#2", out)
         stats = session_stats(self.store)
@@ -229,7 +229,7 @@ class TestV15Bugs(unittest.TestCase):
         r = self._run(["/onuwifi /definitely/not/here 10.0.0.1", "list", "quit"])
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("file not found", r.stdout)
-        self.assertIn("[ERROR", r.stdout)               # logged as error entry
+        self.assertIn("ERROR", r.stdout)               # logged as error entry
 
 
 if __name__ == "__main__":

@@ -83,8 +83,9 @@ segundo** automáticamente. Usa `/updtime 5` para reducir la frecuencia o
 | `scan` | capturar ahora una nueva instantánea de red |
 | `/updtime [seg]` | intervalo de actualización en segundos (por defecto `1`, mínimo `0.5`) |
 | `/setip [ip\|cidr]` | filtrar por IP o red, p. ej. `/setip 192.168.1.7` o `/setip 10.0.0.0/8`; `/setip off` desactiva |
-| `list` | lista numerada de todos los registros capturados |
+| `list` | lista compacta: `[№] (nombre) (dirección) (tipo) (memoria MB)` por registro |
 | `N open-list` | abrir el **registro detallado completo** número N (p. ej. `3 open-list`) |
+| `/linfo [N]` | info completa de un registro — metadatos + cuerpo entero (p. ej. `/linfo 3`) |
 | `back` | salir de la lectura de logs y volver al menú principal |
 | `/onuwifi [ruta] <ip>` | enviar un ARCHIVO por la red + resumen y registro numerado |
 | `/cleaner` | bloquear envío/recepción de archivos en red durante 5 segundos |

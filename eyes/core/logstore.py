@@ -68,16 +68,43 @@ class LogStore:
             self.entries.clear()
             self.counter = 0
 
+    def size_mb(self, n):
+        """Size of one log entry in MB (rounded to 3 decimals)."""
+        with self.lock:
+            entry = self.entries.get(n)
+        if entry is None:
+            return None
+        return round(len(entry[0].encode("utf-8")) / 1024 / 1024, 3)
+
+    def meta(self, n):
+        """Full metadata tuple for one log: (name, address, type, size_mb)."""
+        with self.lock:
+            entry = self.entries.get(n)
+        if entry is None:
+            return None
+        text, cat = entry
+        name = text.splitlines()[0][:70] if text else "?"
+        addr = self.log_file + f"#LOG{n}"
+        size_mb = round(len(text.encode("utf-8")) / 1024 / 1024, 3)
+        return {"number": n, "name": name, "address": addr,
+                "type": cat.upper(), "size_mb": size_mb}
+
     def listing(self):
-        """Human-readable numbered list of all stored logs."""
+        """Numbered list: [N] (name) (address) (type) (memory MB)."""
         tr = i18n.TR
         with self.lock:
             items = sorted(self.entries.items())
             total = len(items)
+            log_file = self.log_file
         lines = []
         for n, (text, cat) in items:
             first = text.splitlines()[0] if text else ""
+            name = first[:60]
+            addr = f"{log_file}#LOG{n}"
+            size_mb = round(len(text.encode("utf-8")) / 1024 / 1024, 3)
             color = CATEGORY_COLOR.get(cat, C.GREEN)
-            lines.append(paint(f"  #{n:<4} [{cat.upper():<9}] {first}", color))
+            lines.append(paint(
+                f"[{n}] ({name}) ({addr}) ({cat.upper()}) ({size_mb} MB)",
+                color))
         lines.append(paint(f"{tr['total_logs']}: {total}", C.BOLD))
         return "\n".join(lines)

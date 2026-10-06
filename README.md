@@ -83,8 +83,9 @@ Type commands at the `>` prompt.
 | `scan` | capture a new network snapshot now |
 | `/updtime [sec]` | set the live log update interval in seconds (default `1`, min `0.5`) |
 | `/setip [ip\|cidr]` | filter logs by IP or network, e.g. `/setip 192.168.1.7` or `/setip 10.0.0.0/8`; `/setip off` disables |
-| `list` | numbered list of all captured logs |
+| `list` | compact list: `[№] (name) (address) (type) (memory MB)` per log |
 | `N open-list` | open the **full detailed log** number N (e.g. `3 open-list`) |
+| `/linfo [N]` | full info of one log — metadata + entire body (e.g. `/linfo 3`) |
 | `back` | return from log-reading view to the main menu / command window |
 | `/onuwifi [path] <ip>` | send a file over the network + transfer summary log |
 | `/cleaner` | block network file send/receive for 5 seconds (logged as BLOCKED) |
