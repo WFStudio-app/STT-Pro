@@ -69,6 +69,7 @@ from eyes.modules.gscan import scan_networks                 # noqa: E402
 from eyes.output.exporter import export_csv, export_html, export_json  # noqa: E402
 from eyes.output.rotate import rotate_if_needed               # noqa: E402
 from eyes.output.stats import session_stats                   # noqa: E402
+from eyes.server.ai_chat import ask_ai, parse_api             # noqa: E402
 from eyes.utils import config                                 # noqa: E402
 from eyes.utils.banner import show_banner                     # noqa: E402
 from eyes.utils.classify import (IP_FILTER, CATEGORY_COLOR, categorize_full,  # noqa: E402
@@ -79,6 +80,9 @@ from eyes.utils.search import search_logs                     # noqa: E402
 TR = i18n.TR
 store = LogStore()
 LIVE = {"interval": 1.0, "enabled": True}
+LOGD = {"max": 50}            # /logd: delete oldest logs after every N stored
+MODE = {"name": "personal"}   # "personal" | "server" (AI chat extras)
+AI = {"base": None, "key": ""}
 
 HELP_FALLBACK = ("Commands: scan | list | N open-list | back | /updtime [sec] "
                  "| /setip [ip|cidr] | /onuwifi <file> <ip> | /cleaner | /blut "
@@ -90,7 +94,7 @@ def add_log(text):
     """Filter + store one log. Returns number or None if filtered out."""
     if not matches_ip_filter(text):
         return None
-    n = store.add(text, categorize_full(text))
+    n = store.add(text, categorize_full(text), max_logs=LOGD["max"])
     rotate_if_needed(store.log_file)
     return n
 
@@ -120,8 +124,41 @@ def main():
         LIVE["interval"] = max(0.5, float(config.get("updtime")))
     except (TypeError, ValueError):
         pass
+    try:
+        LOGD["max"] = max(0, int(config.get("logd")))
+    except (TypeError, ValueError):
+        LOGD["max"] = 50
     if config.get("setip"):
         parse_filter(str(config.get("setip")))
+
+    # ---- startup mode selection: personal vs server -------------------
+    saved_mode = str(config.get("mode") or "").lower()
+    if saved_mode in ("personal", "server"):
+        MODE["name"] = saved_mode
+        print(paint(i18n.MODE_TEXTS[lang]["chosen_p" if saved_mode != "server" else "chosen_s"], C.CYAN))
+    elif sys.stdin.isatty():
+        box, t = i18n.mode_window(lang)
+        print(paint(box, C.CYAN))
+        try:
+            choice = input(paint(t["ask"], C.BOLD)).strip()
+        except (EOFError, KeyboardInterrupt):
+            choice = "1"
+        if choice == "2":
+            MODE["name"] = "server"
+            print(paint(t["chosen_s"], C.PURPLE))
+        elif choice in ("1", ""):
+            MODE["name"] = "personal"
+            print(paint(t["chosen_p"], C.GREEN))
+        else:
+            MODE["name"] = "personal"
+            print(paint(t["bad"], C.YELLOW))
+        config.set_and_save("mode", MODE["name"])
+    else:
+        MODE["name"] = "personal"
+
+    # restore AI API config (server mode)
+    if MODE["name"] == "server" and config.get("ai_api"):
+        AI["base"], AI["key"] = parse_api(str(config.get("ai_api")))
 
     # live logging only in an interactive terminal; when input is piped
     # (scripts/tests) the thread would spin unthrottled — use 'scan' cmd
@@ -187,7 +224,8 @@ def main():
             cfg = config.CFG
             print(paint(f"config.json -> {os.path.abspath(config.PATH)}", C.CYAN))
             for k in sorted(cfg):
-                print(f"  {k} = {cfg[k]!r}")
+                v = "***hidden***" if k in config.SECRET_KEYS and cfg[k] else cfg[k]
+                print(f"  {k} = {v!r}")
         elif cmd == "back":
             # exit log-reading view -> return to the main command window
             show_banner(LIVE["interval"])
@@ -232,6 +270,63 @@ def main():
             if n is not None:
                 print(paint(f"[{TR['log_num']}] #{n} | "
                             f"{TR['g_hint']}", C.GREEN))
+        elif cmd == "/logd":
+            if len(parts) != 2:
+                print(paint(f"{TR['logd_bad']} (current: {LOGD['max']})", C.RED))
+            else:
+                try:
+                    val = int(parts[1])
+                    if val < 0:
+                        raise ValueError
+                    LOGD["max"] = val
+                    config.set_and_save("logd", val)
+                    if val == 0:
+                        print(paint(TR["logd_unlimited"], C.PURPLE))
+                    else:
+                        removed = store.trim(val)
+                        msg = f"{TR['logd_set']} {val} {TR['logd_logs']}."
+                        if removed:
+                            msg += f" ({TR['logd_trimmed']} {removed})"
+                        print(paint(msg, C.GREEN))
+                except ValueError:
+                    print(paint(TR["logd_bad"], C.RED))
+        elif cmd == "/ai_api":
+            if MODE["name"] != "server":
+                print(paint(TR["ai_need_server"], C.RED))
+            elif len(parts) != 2:
+                print(paint(TR["ai_api_bad"], C.RED))
+            elif parts[1].lower() in ("off", "none", "clear"):
+                AI["base"], AI["key"] = None, ""
+                config.set_and_save("ai_api", "")
+                print(paint(TR["ai_api_off"], C.YELLOW))
+            else:
+                base, key = parse_api(parts[1])
+                if not base:
+                    print(paint(TR["ai_api_bad"], C.RED))
+                else:
+                    AI["base"], AI["key"] = base, key
+                    config.set_and_save("ai_api", parts[1])
+                    n = add_log(f"[AI] API configured -> {base} "
+                                f"(key {'set' if key else 'not set'})")
+                    print(paint(TR["ai_api_set"], C.GREEN)
+                          + (f"  [{TR['log_num']}] #{n}" if n else ""))
+        elif cmd == "ask":
+            if MODE["name"] != "server":
+                print(paint(TR["ai_need_server"], C.RED))
+            elif len(parts) < 2:
+                print(paint(TR["ask_bad"], C.RED))
+            elif not AI["base"]:
+                print(paint(TR["ai_no_key"], C.RED))
+            else:
+                question = " ".join(parts[1:])
+                print(paint(TR["ai_thinking"], C.PURPLE))
+                ok, answer = ask_ai(AI["base"], AI["key"], store, question)
+                log_text = (f"[{TR['ai_log_head']}] Q: {question}\n"
+                            f"A: {answer}")
+                n = add_log(log_text)
+                print(colorize_log(log_text, "success" if ok else "error"))
+                if n is not None:
+                    print(paint(f"[{TR['log_num']}] #{n}", C.GREEN))
         elif cmd == "/updtime":
             if len(parts) != 2:
                 print(paint(f"{TR['updtime_bad']} (current: {LIVE['interval']}s)", C.RED))

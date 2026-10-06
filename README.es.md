@@ -85,6 +85,14 @@ segundo** automáticamente. Usa `/updtime 5` para reducir la frecuencia o
 | `/setip [ip\|cidr]` | filtrar por IP o red, p. ej. `/setip 192.168.1.7` o `/setip 10.0.0.0/8`; `/setip off` desactiva |
 | `list` | lista numerada de todos los registros capturados |
 | `N open-list` | abrir el **registro detallado completo** número N (p. ej. `3 open-list`) |
+| `back` | salir de la lectura de logs y volver al menú principal |
+| `/onuwifi [ruta] <ip>` | enviar un ARCHIVO por la red + resumen y registro numerado |
+| `/cleaner` | bloquear envío/recepción de archivos en red durante 5 segundos |
+| `/blut` | escanear dispositivos Bluetooth cercanos (registros `[B]` azules) |
+| `/g` | escanear redes cercanas y listar destinos accesibles |
+| `/logd [N]` | borrar los registros viejos de memoria tras cada N guardados (def. 50, 0=no) |
+| `/ai_api [API]` | modo SERVIDOR: clave/url de la red neuronal para chatear con los logs |
+| `ask <pregunta>` | modo SERVIDOR: la IA analiza los últimos 50 registros y responde |
 | `version` | versión del programa + algoritmo de actualización |
 | `clear` | limpiar el historial de registros en memoria |
 | `banner` | mostrar la ventana de comandos otra vez |

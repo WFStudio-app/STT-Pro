@@ -11,10 +11,15 @@ PATH = os.environ.get("EYES_CONFIG", "config.json")
 
 DEFAULTS = {
     "lang": None,          # None = auto-detect
+    "mode": None,          # None = ask at startup | "personal" | "server"
     "updtime": 1.0,
     "setip": "",           # "" = off
+    "logd": 50,            # keep last N logs in memory (older deleted); 0 = unlimited
+    "ai_api": "",          # server mode: "<key>@<url>" or url or key (never shown in 'config')
     "bw_warn_mbps": 10,
 }
+
+SECRET_KEYS = ("ai_api",)
 
 CFG = dict(DEFAULTS)
 

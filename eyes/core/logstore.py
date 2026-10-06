@@ -22,8 +22,27 @@ class LogStore:
         self.log_file = log_file
         os.makedirs(self.log_dir, exist_ok=True)
 
-    def add(self, text, category="success"):
-        """Add a numbered log entry, persist to file, return its number."""
+    def trim(self, max_logs=None):
+        """Drop the oldest in-memory entries so at most `max_logs` remain.
+
+        max_logs <= 0 or None -> keep everything (no trimming).
+        Returns the number of entries removed.
+        """
+        if not max_logs or int(max_logs) <= 0:
+            return 0
+        max_logs = int(max_logs)
+        with self.lock:
+            victims = sorted(self.entries.keys())[:-max_logs]
+            for v in victims:
+                self.entries.pop(v, None)
+        return len(victims)
+
+    def add(self, text, category="success", max_logs=None):
+        """Add a numbered log entry, persist to file, return its number.
+
+        After adding, trims the oldest in-memory logs when max_logs is set
+        (see /logd command; default 50).
+        """
         with self.lock:
             self.counter += 1
             n = self.counter
@@ -37,6 +56,7 @@ class LogStore:
                     f.write("\n")
         except OSError:
             pass
+        self.trim(max_logs)
         return n
 
     def get(self, n):

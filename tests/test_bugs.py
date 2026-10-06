@@ -234,3 +234,57 @@ class TestV15Bugs(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestV160Features(unittest.TestCase):
+    """Regression tests for v1.6.0: /logd trimming, mode window, AI api parse."""
+
+    def test_logstore_trim(self):
+        from eyes.core.logstore import LogStore
+        import tempfile, os
+        d = tempfile.mkdtemp()
+        s = LogStore(log_dir=d, log_file=os.path.join(d, "x.log"))
+        for i in range(10):
+            s.add(f"log {i}", "success", max_logs=5)
+        self.assertEqual(len(s.entries), 5)
+        self.assertEqual(sorted(s.entries), [6, 7, 8, 9, 10])
+        # max_logs=0 -> unlimited
+        for i in range(10):
+            s.add(f"more {i}", "success", max_logs=0)
+        self.assertEqual(len(s.entries), 15)  # 5 kept + 10 new (max_logs=0 -> no trim)
+
+    def test_parse_api_variants(self):
+        from eyes.server.ai_chat import parse_api
+        base, key = parse_api("sk-abc123")
+        self.assertEqual(base, "https://api.openai.com/v1")
+        self.assertEqual(key, "sk-abc123")
+        base, key = parse_api("mykey@http://localhost:11434/v1")
+        self.assertEqual(base, "http://localhost:11434")
+        self.assertEqual(key, "mykey")
+        base, key = parse_api("http://host:8080/v1/chat/completions")
+        self.assertEqual(base, "http://host:8080")
+        self.assertEqual(key, "")
+        self.assertEqual(parse_api(""), (None, None))
+
+    def test_mode_window_both_langs(self):
+        from eyes.core import i18n
+        for lang in ("en", "es"):
+            box, t = i18n.mode_window(lang)
+            self.assertIn("1", box)
+            self.assertIn("2", box)
+            self.assertTrue(t["ask"])
+
+    def test_i18n_new_keys_present(self):
+        from eyes.core import i18n
+        keys = ("logd_set", "logd_bad", "logd_unlimited", "ai_need_server",
+                "ai_api_set", "ai_api_bad", "ask_bad", "ai_thinking",
+                "ai_log_head", "logd_logs", "logd_trimmed", "ai_no_key", "ai_api_off")
+        for lang in ("en", "es"):
+            for k in keys:
+                self.assertIn(k, i18n.T[lang], f"{lang}:{k} missing")
+
+    def test_config_defaults_v160(self):
+        from eyes.utils import config
+        self.assertEqual(config.DEFAULTS["logd"], 50)
+        self.assertIn("mode", config.DEFAULTS)
+        self.assertIn("ai_api", config.SECRET_KEYS)

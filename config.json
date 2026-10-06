@@ -1,6 +1,9 @@
 {
   "lang": null,
-  "updtime": 2.0,
+  "mode": "server",
+  "updtime": 1.0,
   "setip": "",
+  "logd": 50,
+  "ai_api": "sk-test123",
   "bw_warn_mbps": 10
 }

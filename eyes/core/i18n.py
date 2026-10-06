@@ -24,6 +24,51 @@ def detect_lang(argv=None):
     return lang if lang in SUPPORTED else "en"
 
 
+# ---------------------------------------------------------------------------
+# Startup mode-selection window (personal / server). Language-independent
+# labels are translated via TR once a language is chosen; this dict holds
+# both languages so the window can be shown before/after language detection.
+# ---------------------------------------------------------------------------
+MODE_TEXTS = {
+    "en": {
+        "q_title": "SELECT OPERATION MODE",
+        "q_line": "What will Eyes of the Network be used for?",
+        "personal": "1 - Personal use   (standard monitor)",
+        "server":   "2 - Server         (+ AI neural-network log chat: /ai_api, ask)",
+        "ask":      "Choose [1/2] (default 1): ",
+        "chosen_p": "Mode: PERSONAL — standard monitoring.",
+        "chosen_s": ("Mode: SERVER — extra commands enabled: "
+                     "/ai_api <API-key-or-url>, ask <question>."),
+        "bad": "Invalid choice, using Personal mode.",
+    },
+    "es": {
+        "q_title": "ELIGE EL MODO DE OPERACIÓN",
+        "q_line": "¿Para qué se usará Eyes of the Network?",
+        "personal": "1 - Uso personal   (monitor estándar)",
+        "server":   "2 - Servidor       (+ chat de logs con IA: /ai_api, ask)",
+        "ask":      "Elige [1/2] (por defecto 1): ",
+        "chosen_p": "Modo: PERSONAL — monitoreo estándar.",
+        "chosen_s": ("Modo: SERVIDOR — comandos extra activados: "
+                     "/ai_api <clave-o-url>, ask <pregunta>."),
+        "bad": "Opción inválida, usando modo Personal.",
+    },
+}
+
+
+def mode_window(lang="en"):
+    """Return the pretty boxed startup mode-selection text lines."""
+    t = MODE_TEXTS.get(lang, MODE_TEXTS["en"])
+    width = 66
+    lines = ["╔" + "═" * width + "╗",
+             "║" + t["q_title"].center(width) + "║",
+             "║" + t["q_line"].center(width) + "║",
+             "╠" + "═" * width + "╣",
+             "║ " + t["personal"].ljust(width - 1) + "║",
+             "║ " + t["server"].ljust(width - 1) + "║",
+             "╚" + "═" * width + "╝"]
+    return "\n".join(lines), t
+
+
 T = {
     "en": {
         "title": "Eyes of the Network — Linux network monitor",
@@ -76,6 +121,19 @@ T = {
         "blut_start": "Scanning nearby Bluetooth devices...",
         "g_start": "Scanning surrounding networks for reachable targets...",
         "g_hint": "listed networks accept requests",
+        "logd_set": "Old logs will be deleted after each",
+        "logd_logs": "logs",
+        "logd_unlimited": "Log trimming disabled — all logs kept in memory",
+        "logd_bad": "Usage: /logd <number>  (0 = keep everything). Example: /logd 100",
+        "logd_trimmed": "Trimmed oldest logs from memory:",
+        "ai_need_server": "AI chat is only available in SERVER mode (choose it at startup or set \"mode\": \"server\" in config.json).",
+        "ai_api_set": "AI API configured. Ask with: ask <question>",
+        "ai_api_bad": "Usage: /ai_api <API-key-or-url>   ('off' to clear)",
+        "ai_api_off": "AI API key cleared.",
+        "ai_no_key": "No API configured yet. Use: /ai_api <API-key-or-url>",
+        "ask_bad": "Usage: ask <question about the last 50 logs>",
+        "ai_thinking": "Asking the neural network (last 50 logs as context)...",
+        "ai_log_head": "AI CHAT",
         "categories": {
             "success": "SUCCESS", "warning": "SUSPICIOUS", "error": "BLOCKED/FAILED",
             "masked": "MASKED", "own": "OWN NETWORK", "bt": "BLUETOOTH",
@@ -91,6 +149,9 @@ T = {
             ("/cleaner",         "block network file send/receive for 5 seconds"),
             ("/blut",            "scan nearby Bluetooth devices ([B] blue logs)"),
             ("/g",               "scan surrounding networks & reachable targets"),
+            ("/logd [N]",        "delete oldest logs after every N stored (default 50, 0=off)"),
+            ("/ai_api [API]",    "SERVER mode: set neural-network API key/url for log chat"),
+            ("ask <question>",   "SERVER mode: AI analyzes the last 50 logs and answers"),
             ("stats",            "session statistics per log color"),
             ("export [json|csv|html]", "export all logs to a file"),
             ("search <text>",    "find logs containing text/regex"),
@@ -152,6 +213,19 @@ T = {
         "blut_start": "Escaneando dispositivos Bluetooth cercanos...",
         "g_start": "Escaneando redes cercanas para encontrar destinos disponibles...",
         "g_hint": "las redes listadas aceptan solicitudes",
+        "logd_set": "Los registros viejos se borrarán tras cada",
+        "logd_logs": "registros",
+        "logd_unlimited": "Purga desactivada — todos los registros se conservan",
+        "logd_bad": "Uso: /logd <número>  (0 = conservar todo). Ejemplo: /logd 100",
+        "logd_trimmed": "Registros antiguos eliminados de memoria:",
+        "ai_need_server": "El chat con IA solo está disponible en modo SERVIDOR (elígelo al inicio o pon \"mode\": \"server\" en config.json).",
+        "ai_api_set": "API de IA configurada. Pregunta con: ask <pregunta>",
+        "ai_api_bad": "Uso: /ai_api <clave-o-url-de-API>   ('off' para limpiar)",
+        "ai_api_off": "Clave de API eliminada.",
+        "ai_no_key": "Aún no hay API configurada. Usa: /ai_api <clave-o-url>",
+        "ask_bad": "Uso: ask <pregunta sobre los últimos 50 registros>",
+        "ai_thinking": "Consultando a la red neuronal (últimos 50 registros como contexto)...",
+        "ai_log_head": "CHAT IA",
         "categories": {
             "success": "ÉXITO", "warning": "SOSPECHOSO", "error": "BLOQUEADO/FALLIDO",
             "masked": "ENMASCARADO", "own": "RED PROPIA", "bt": "BLUETOOTH",
@@ -167,6 +241,9 @@ T = {
             ("/cleaner",         "bloquear envío/recepción de archivos 5 segundos"),
             ("/blut",            "escanear Bluetooth cercano (registros [B] azules)"),
             ("/g",               "escanear redes cercanas y destinos disponibles"),
+            ("/logd [N]",        "borrar registros viejos tras cada N guardados (def. 50, 0=no)"),
+            ("/ai_api [API]",    "modo SERVIDOR: clave/url de la IA para chatear con logs"),
+            ("ask <pregunta>",   "modo SERVIDOR: la IA analiza los últimos 50 registros"),
             ("stats",            "estadísticas de sesión por color"),
             ("export [json|csv|html]", "exportar registros a archivo"),
             ("search <texto>",   "buscar registros con texto/regex"),

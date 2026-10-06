@@ -90,6 +90,9 @@ Type commands at the `>` prompt.
 | `/cleaner` | block network file send/receive for 5 seconds (logged as BLOCKED) |
 | `/blut` | scan nearby Bluetooth devices — every line prefixed blue `[B]` |
 | `/g` | scan surrounding networks & list reachable targets for requests |
+| `/logd [N]` | delete oldest in-memory logs after every N stored (default 50, 0=off) |
+| `/ai_api [API]` | SERVER mode: set the neural-network API key/url for the log chat |
+| `ask <question>` | SERVER mode: AI analyzes the last 50 logs and answers |
 | `stats` | session statistics per log color |
 | `export [json\|csv\|html]` | export all logs to a report file |
 | `search <text\|regex>` | find logs containing text/regex |

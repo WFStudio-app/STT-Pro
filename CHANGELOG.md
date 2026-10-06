@@ -5,6 +5,15 @@ Versioning scheme: `X.X.X`
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
 
+## [1.6.0] — 2026-10-06 — 🚀 Major update (modes, AI log chat, log trimming)
+### Added
+- **Startup mode selection window** — pretty boxed dialog: `1 - Personal use` or `2 - Server`; choice saved to config.json (`"mode"`)
+- **SERVER mode extras** (`eyes/server/ai_chat.py`):
+  - `/ai_api <API-key-or-url>` — connect any OpenAI-compatible neural-network API (bare key, `KEY@URL`, or keyless local URL like Ollama/llama.cpp); stored hidden in config.json
+  - `ask <question>` — the AI receives the **last 50 logs** as context and answers; Q/A stored as a numbered log entry
+- **`/logd [N]`** — keep only the last N logs in memory (older ones deleted automatically after each new log). Default **50**, `0` = unlimited; persisted in config.json (`logs/session.log` file history is untouched)
+- New unit tests for trimming, API parsing, mode window, i18n keys (24 tests total)
+
 ## [1.5.0] — 2026-10-06 — 🚀 Major update (new commands)
 ### Added
 - **`back`** — exit full-log view (`N open-list`) and return to the main menu
