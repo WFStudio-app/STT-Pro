@@ -5,5 +5,7 @@
   "setip": "",
   "logd": 50,
   "ai_api": "sk-test123",
-  "bw_warn_mbps": 10
+  "bw_warn_mbps": 10,
+  "logd_prev": 50,
+  "bserver": false
 }

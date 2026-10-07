@@ -15,6 +15,7 @@ from eyes.analysis import anomalies, baseline, fingerprint
 from eyes.core import i18n
 from eyes.core.version import VERSION
 from eyes.modules import device
+from eyes.modules.bserver import scan_fleet
 from eyes.modules.bandwidth import collect_bandwidth
 from eyes.modules.collectors import (collect_arp, collect_connections,
                                      collect_dns, collect_interfaces,
@@ -25,6 +26,18 @@ from eyes.modules.ports import collect_ports
 from eyes.modules.vpn import detect_vpn
 from eyes.modules.wifi import collect_wifi
 from eyes.utils.shell import run
+
+# extended-mode flag toggled by /bserver (net_monitor keeps it in sync)
+BSERVER_STATE = {"active": False}
+
+
+def bserver_active():
+    return bool(BSERVER_STATE["active"])
+
+
+def fleet_lines():
+    """Fleet report text for inclusion in a snapshot log."""
+    return "\n".join(scan_fleet())
 
 
 def _detail_fields(body_text, gw):
@@ -94,6 +107,8 @@ def build_full_log():
         anomalies.check_anomalies(), "",
         ping_check(gw),
     ]
+    if bserver_active():
+        body_sections += ["", fleet_lines()]
     body_text = "\n".join(header + body_sections)
 
     detail, _vpn = _detail_fields(body_text, gw)

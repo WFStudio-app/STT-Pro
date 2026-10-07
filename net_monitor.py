@@ -61,7 +61,8 @@ from eyes.core import i18n                                    # noqa: E402
 from eyes.core.colors import C, paint                         # noqa: E402
 from eyes.core.logstore import LogStore, LOG_FILE             # noqa: E402
 from eyes.core.version import VERSION, UPDATE_ALGORITHM       # noqa: E402
-from eyes.modules.snapshot import build_full_log              # noqa: E402
+from eyes.modules.snapshot import build_full_log, BSERVER_STATE  # noqa: E402
+from eyes.modules.bserver import scan_fleet, fleet_stats      # noqa: E402
 from eyes.modules.transmitter import send_file               # noqa: E402
 from eyes.modules.cleaner import run_cleaner                 # noqa: E402
 from eyes.modules.blut import scan_bluetooth                 # noqa: E402
@@ -81,14 +82,47 @@ TR = i18n.TR
 store = LogStore()
 LIVE = {"interval": 1.0, "enabled": True}
 LOGD = {"max": 50}            # /logd: delete oldest logs after every N stored
+BSERVER = {"active": False}   # /bserver: extended company/large-network mode
 MODE = {"name": "personal"}   # "personal" | "server" (AI chat extras)
 AI = {"base": None, "key": ""}
 
 HELP_FALLBACK = ("Commands: scan | list | N open-list | /linfo [N] | back "
                  "| /updtime [sec] | /setip [ip|cidr] | /onuwifi <file> <ip> "
-                 "| /cleaner | /blut | /g | stats | export json|csv|html "
+                 "| /cleaner | /blut | /g | /bserver [on|off] | /logd [N] "
+                 "| stats | export json|csv|html "
                  "| search <text> | config | version | clear | banner "
                  "| help | quit")
+
+
+def set_bserver(active):
+    """Toggle extended company/large-network mode.
+
+    On  -> auto-clean (logd) defaults to 250 logs unless the user has
+           explicitly configured another value; persists in config.json.
+    Off -> restores standard monitoring (previous logd value kept).
+    """
+    BSERVER["active"] = active
+    BSERVER_STATE["active"] = active
+    if active:
+        try:
+            prev = int(config.get("logd_prev") or LOGD["max"])
+        except (TypeError, ValueError):
+            prev = LOGD["max"]
+        saved = config.get("logd")
+        if saved is None or int(saved) <= 250:
+            LOGD["max"] = 250
+            config.set_and_save("logd", 250)
+        config.set_and_save("logd_prev", prev)
+        config.set_and_save("bserver", True)
+        print(paint(TR["bserver_on"], C.CYAN))
+    else:
+        try:
+            LOGD["max"] = max(0, int(config.get("logd_prev") or 50))
+        except (TypeError, ValueError):
+            LOGD["max"] = 50
+        config.set_and_save("logd", LOGD["max"])
+        config.set_and_save("bserver", False)
+        print(paint(TR["bserver_off"], C.YELLOW))
 
 
 def show_log_info(n):
@@ -147,6 +181,10 @@ def main():
         LOGD["max"] = max(0, int(config.get("logd")))
     except (TypeError, ValueError):
         LOGD["max"] = 50
+    # restore extended company/large-network mode if it was active
+    if str(config.get("bserver")).lower() in ("true", "1", "yes"):
+        BSERVER["active"] = True
+        BSERVER_STATE["active"] = True
     if config.get("setip"):
         parse_filter(str(config.get("setip")))
 
@@ -297,6 +335,28 @@ def main():
             if n is not None:
                 print(paint(f"[{TR['log_num']}] #{n} | "
                             f"{TR['g_hint']}", C.GREEN))
+        elif cmd == "/bserver":
+            arg = parts[1].lower() if len(parts) > 1 else ""
+            if len(parts) > 2:
+                print(paint(TR["bserver_bad"], C.RED))
+            elif arg in ("on", ""):
+                if BSERVER["active"] and arg == "on":
+                    print(paint(TR["bserver_active"], C.CYAN))
+                else:
+                    set_bserver(True)
+                # run a one-time fleet scan right away
+                print(paint(TR["bserver_start"], C.CYAN))
+                lines = scan_fleet()
+                log_text = "\n".join(lines)
+                n = add_log(log_text)
+                for ln in lines:
+                    print(paint(ln, C.CYAN))
+                if n is not None:
+                    print(paint(f"[{TR['log_num']}] #{n}", C.GREEN))
+            elif arg == "off":
+                set_bserver(False)
+            else:
+                print(paint(TR["bserver_bad"], C.RED))
         elif cmd == "/logd":
             if len(parts) != 2:
                 print(paint(f"{TR['logd_bad']} (current: {LOGD['max']})", C.RED))

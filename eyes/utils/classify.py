@@ -162,6 +162,17 @@ def classify_line(line, ctx=None):
     if low.startswith("[b]"):          # Bluetooth scan lines -> blue marker
         return "bt"
 
+    # /bserver extended-mode fleet lines -> cyan "own network" marker
+    # (v1.7.0); genuine problems inside the report still classify normally
+    if low.startswith("[bserver]"):
+        # fleet report headers/hosts are informational (cyan), but genuine
+        # problems inside the report must still light up red/yellow
+        if re.search(r"\bfail(ed)?\b|\berror\b", low):
+            return "error"
+        if re.search(r"no hosts detected|no routable", low):
+            return "warning"
+        return "own"
+
     if _ERROR_PAT.search(low):
         return "error"
     if _MASKED_PAT.search(low):

@@ -1,6 +1,10 @@
-STT-info/node_modules/
+# Python compiled files
+__pycache__/
+*.pyc
+
+# Logs
+logs/node_modules/
 .next/
 dist/
 build/
 *.log
-node_modules/
