@@ -3,3 +3,4 @@ STT-info/node_modules/
 dist/
 build/
 *.log
+node_modules/
