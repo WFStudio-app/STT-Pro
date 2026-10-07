@@ -1,11 +1,5 @@
-# Python compiled files
-__pycache__/
-*.pyc
-
-# Logs
-logs/node_modules/
+TokenPFS/node_modules/
 .next/
 dist/
 build/
 *.log
-node_modules/
