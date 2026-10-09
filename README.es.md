@@ -1,6 +1,17 @@
-# 🛰️ STT Pro
+# 🛰️ ServerCloud
 
 > [EN](README.md) · **ES**
+
+## 🧭 Modos de operación (industrial: personal → servidores gigantes)
+
+| # | Modo | Para qué | Extras |
+|---|------|----------|--------|
+| 1 | **Personal** | un dispositivo / red doméstica | monitor estándar |
+| 2 | **Servidor** | monitoreo datacenter / VPS | `/ai_api`, `ask` (analista IA), auto-limpieza |
+| 3 | **Fábrica IA** | generación local de LLM en cualquier hardware (Ollama) | `/aimode`: `/models` (71), `/bmc` (gigantes 25 GB+), `/w` chat, `/stf`, `/autt`, `/dnm`, `/dnmf`, `/delm` |
+| 4 | **Completo** | TODOS los módulos a la vez — despliegue industrial | monitor de red + fábrica IA |
+
+Elige al inicio o cambia en vivo con `/mode [personal|server|ai|full]`; entra a la fábrica IA con `/aimode` (salir: `back`). CLI: `python3 net_monitor.py -m full`.
 
 [![Versión](https://img.shields.io/badge/versi%C3%B3n-1.2.0-blue)](#-algoritmo-de-actualización)
 [![Plataforma](https://img.shields.io/badge/plataforma-Linux-FCC624?logo=linux&logoColor=black)]()
@@ -8,7 +19,7 @@
 [![Licencia](https://img.shields.io/badge/licencia-MIT-green)](LICENSE)
 [![Idiomas](https://img.shields.io/badge/idiomas-EN%20|%20ES-lightgrey)]()
 
-**STT Pro** es un monitor de red ligero para terminal en **Linux**.
+**ServerCloud** es un monitor de red ligero para terminal en **Linux**.
 Captura toda la información de la red a la que está conectado tu dispositivo —
 interfaces, direcciones IP/MAC, DNS, tabla de enrutamiento, vecinos ARP, conexiones
 TCP/UDP activas y comprobaciones de alcance — y guarda cada instantánea como un
@@ -104,7 +115,7 @@ segundo** automáticamente. Usa `/updtime 5` para reducir la frecuencia o
 
 ```
 ===== LOG #1 | 2026-10-05 14:22:31 | [ÉXITO] =====
-STT Pro v1.2.0 | lang=es
+ServerCloud v1.2.0 | lang=es
 Sistema operativo: Linux, kernel 6.8.0-45-generic
 Nombre del host: thinkpad
 

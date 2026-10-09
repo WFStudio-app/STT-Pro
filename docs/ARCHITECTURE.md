@@ -1,4 +1,4 @@
-# Architecture — STT Pro
+# Architecture — ServerCloud
 
 Project layout: every function lives in its own file, grouped by folders.
 

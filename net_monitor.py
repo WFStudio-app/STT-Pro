@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-net_monitor.py — STT Pro (modular entry point)
+net_monitor.py — ServerCloud (modular entry point)
 
 Network monitor for Linux. Reads information about the network the device is
 connected to (interfaces, Wi-Fi, IP, DNS source, routes, ARP neighbors, ports,
@@ -86,7 +86,7 @@ BSERVER = {"active": False}   # /bserver: extended company/large-network mode
 MODE = {"name": "personal"}   # "personal" | "server" (AI chat extras)
 AI = {"base": None, "key": ""}
 
-HELP_FALLBACK = ("Commands: scan | list | N open-list | /linfo [N] | back "
+HELP_FALLBACK = ("Commands: scan | list | N open-list | /linfo [N] | back | /mode [personal|server|ai|full] | /aimode "
                  "| /updtime [sec] | /setip [ip|cidr] | /onuwifi <file> <ip> "
                  "| /cleaner | /blut | /g | /bserver [on|off] | /logd [N] "
                  "| stats | export json|csv|html "
@@ -188,28 +188,57 @@ def main():
     if config.get("setip"):
         parse_filter(str(config.get("setip")))
 
-    # ---- startup mode selection: personal vs server -------------------
+    # ---- startup mode selection ----------------------------------------
+    # ServerCloud is industrial software for small-to-huge servers.
+    # Modes: 1 personal | 2 server | 3 ai (local LLM factory) | 4 full
+    VALID_MODES = ("personal", "server", "ai", "full")
+    MODE_LABELS = {
+        "personal": "Personal — single device / home network",
+        "server":   "Server — datacenter / VPS monitoring + AI analyst",
+        "ai":       "AI Factory — local LLM token generation (Ollama)",
+        "full":     "Full — all modules (network monitor + AI factory)",
+    }
+
+    def _apply_mode(name):
+        MODE["name"] = name
+        if name in ("server", "full"):
+            set_bserver(True)          # large-network auto-clean defaults
+
     saved_mode = str(config.get("mode") or "").lower()
-    if saved_mode in ("personal", "server"):
+    cli_mode = None
+    argv_tail = sys.argv[1:]
+    for i, a in enumerate(argv_tail):
+        if a in ("-m", "--mode") and i + 1 < len(argv_tail):
+            cand = argv_tail[i + 1].lower()
+            if cand in VALID_MODES:
+                cli_mode = cand
+    if cli_mode:
+        _apply_mode(cli_mode)
+        print(paint(f"Mode: {MODE_LABELS[cli_mode]}", C.CYAN))
+        config.set_and_save("mode", cli_mode)
+    elif saved_mode in VALID_MODES:
         MODE["name"] = saved_mode
-        print(paint(i18n.MODE_TEXTS[lang]["chosen_p" if saved_mode != "server" else "chosen_s"], C.CYAN))
+        if saved_mode in ("server", "full"):
+            set_bserver(True)
+        print(paint(f"Mode restored: {MODE_LABELS[saved_mode]}", C.CYAN))
     elif sys.stdin.isatty():
         box, t = i18n.mode_window(lang)
         print(paint(box, C.CYAN))
+        print(paint("  3) AI Factory — local LLMs (models, chat, tokens/s)\n"
+                    "  4) Full      — Network Monitor + AI Factory", C.PURPLE))
         try:
             choice = input(paint(t["ask"], C.BOLD)).strip()
         except (EOFError, KeyboardInterrupt):
             choice = "1"
-        if choice == "2":
-            MODE["name"] = "server"
-            print(paint(t["chosen_s"], C.PURPLE))
-        elif choice in ("1", ""):
-            MODE["name"] = "personal"
-            print(paint(t["chosen_p"], C.GREEN))
+        pick = {"1": "personal", "2": "server", "3": "ai", "4": "full"}.get(choice)
+        if pick:
+            _apply_mode(pick)
+            print(paint(f"Mode: {MODE_LABELS[pick]}", C.CYAN))
+            config.set_and_save("mode", pick)
         else:
             MODE["name"] = "personal"
             print(paint(t["bad"], C.YELLOW))
-        config.set_and_save("mode", MODE["name"])
+            config.set_and_save("mode", "personal")
     else:
         MODE["name"] = "personal"
 
@@ -252,7 +281,7 @@ def main():
         elif cmd == "list":
             print(store.listing())
         elif cmd == "version":
-            print(f"STT Pro v{VERSION}\n{UPDATE_ALGORITHM}")
+            print(f"ServerCloud v{VERSION}\n{UPDATE_ALGORITHM}")
         elif cmd == "clear":
             store.clear()
             print(paint("OK", C.GREEN))
@@ -295,6 +324,32 @@ def main():
             # exit log-reading view -> return to the main command window
             show_banner(LIVE["interval"])
             print(paint(TR["back_ok"], C.CYAN))
+        elif cmd in ("/mode", "mode"):
+            if len(parts) > 1 and parts[1].lower() in VALID_MODES:
+                _apply_mode(parts[1].lower())
+                config.set_and_save("mode", MODE["name"])
+                print(paint(f"Mode switched: {MODE_LABELS[MODE['name']]}", C.CYAN))
+                if MODE["name"] in ("server", "full") and not AI["base"]:
+                    print(paint("Tip: /ai_api <key|url> to enable the AI analyst.", C.YELLOW))
+            else:
+                print(paint(f"Current mode: {MODE_LABELS.get(MODE['name'], MODE['name'])}", C.PURPLE))
+                for k, v in MODE_LABELS.items():
+                    mark = "*" if MODE["name"] == k else " "
+                    print(f" {mark} /mode {k:<9} — {v}")
+        elif cmd in ("/aimode", "aimode"):
+            # switch into the AI Factory (local LLM token generation)
+            print(paint("Entering AI Factory mode... type 'back' to return.", C.PURPLE))
+            add_log("[AI] Entering AI Factory mode (ServerCloud-AI engine)")
+            try:
+                from tokenpfs_app import App as AIApp   # noqa: WPS433
+            except Exception as exc:   # pragma: no cover - env-dependent
+                print(paint(f"AI engine unavailable: {exc}", C.RED))
+            else:
+                try:
+                    AIApp().run()
+                except KeyboardInterrupt:
+                    pass
+                print(paint(TR["back_ok"], C.CYAN))
         elif cmd == "/onuwifi":
             if len(parts) < 2:
                 print(paint(TR["onuwifi_bad"], C.RED))
@@ -378,7 +433,7 @@ def main():
                 except ValueError:
                     print(paint(TR["logd_bad"], C.RED))
         elif cmd == "/ai_api":
-            if MODE["name"] != "server":
+            if MODE["name"] not in ("server", "full"):
                 print(paint(TR["ai_need_server"], C.RED))
             elif len(parts) != 2:
                 print(paint(TR["ai_api_bad"], C.RED))
@@ -398,7 +453,7 @@ def main():
                     print(paint(TR["ai_api_set"], C.GREEN)
                           + (f"  [{TR['log_num']}] #{n}" if n else ""))
         elif cmd == "ask":
-            if MODE["name"] != "server":
+            if MODE["name"] not in ("server", "full"):
                 print(paint(TR["ai_need_server"], C.RED))
             elif len(parts) < 2:
                 print(paint(TR["ask_bad"], C.RED))

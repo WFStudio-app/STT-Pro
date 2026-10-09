@@ -1,0 +1,160 @@
+"""Parallel generation manager.
+
+Each question runs in its own worker thread against Ollama, so several
+models can generate answers simultaneously. A live status line per job:
+
+  Text — [model name] [what it's doing now] [tokens/sec] [ETA]
+"""
+
+import threading
+import time
+
+
+class Job:
+    _seq = itertools_count = None
+
+    def __init__(self, jid, number, model, prompt, tps, runner,
+                 prompt_full=None, chat=None):
+        self.id = jid
+        self.number = number      # "07"
+        self.model = model
+        self.prompt = prompt
+        self.prompt_full = prompt_full or prompt   # ChatML context sent to Ollama
+        self.chat = chat                           # ChatStore for history append
+        self.tps = tps            # tokens per second target (cap)
+        self.runner = runner      # callable(model, prompt, tps, on_token, stop_flag)
+        self.state = "queued"     # queued | generating | done | error | stopped
+        self.tokens_out = 0
+        self.stats = None         # real metrics from Ollama (eval_count...)
+        self.demo = False         # True if answer came from offline demo
+        self.started = None
+        self.finished = None
+        self.answer = ""
+        self.error = None
+        self.stop_flag = threading.Event()
+        self.lock = threading.Lock()
+
+    def rate(self):
+        if not self.started or self.state not in ("generating",):
+            return 0.0
+        dt = time.time() - self.started
+        return self.tokens_out / dt if dt > 0 else 0.0
+
+    def eta(self, est_total=512):
+        r = self.rate()
+        if r <= 0:
+            return None
+        return max(0.0, (est_total - self.tokens_out) / r)
+
+    def status_line(self):
+        act = {"queued": "waiting", "generating": f"generating ({self.tokens_out} tok)",
+               "done": "finished", "error": "failed", "stopped": "stopped"}[self.state]
+        eta = self.eta()
+        eta_s = f"{eta:.0f}s" if eta is not None else "?"
+        label = f"[{self.number}] {self.model}" if self.number not in ("?", "") else self.model
+        return (f"{label} [{act}] [{self.rate():.1f} tok/s] [ready in {eta_s}]")
+
+
+class Manager:
+    def __init__(self, runner):
+        self.runner = runner
+        self.jobs = []
+        self._lock = threading.Lock()
+        self._next_id = 1
+
+    def submit(self, number, model, question, tps, prompt_full=None,
+               chat=None, user_turn_added=False) -> Job:
+        with self._lock:
+            jid = self._next_id
+            self._next_id += 1
+        if prompt_full is None:
+            prompt_full = question
+        job = Job(jid, number, model, question, tps, self.runner,
+                  prompt_full=prompt_full, chat=chat)
+        # register the user turn BEFORE launching the thread so a second
+        # /w to the same model can never read a half-written history.
+        # If the caller already built the prompt from the history *including*
+        # this turn (chat.build_prompt + add), skip to avoid double insertion.
+        if chat is not None and number not in ("?", "") and not user_turn_added:
+            chat.add(number, "user", question)
+        with self._lock:
+            self.jobs.append(job)
+        t = threading.Thread(target=self._run, args=(job,), daemon=True)
+        t.start()
+        return job
+
+    def _run(self, job: Job):
+        job.state = "generating"
+        job.started = time.time()
+
+        def on_token(tok):
+            with job.lock:
+                job.answer += tok
+                job.tokens_out += 1
+
+        try:
+            try:
+                res = self.runner(job.model, job.prompt_full, job.tps,
+                                  on_token, job.stop_flag, job.number)
+            except TypeError:      # legacy 5-arg runners (tests)
+                res = self.runner(job.model, job.prompt_full, job.tps,
+                                  on_token, job.stop_flag)
+            # runner may return (text, ntok, elapsed) or (..., stats)
+            if len(res) == 4:
+                text, ntok, elapsed, stats = res
+            else:
+                text, ntok, elapsed = res
+                stats = {"source": "timer", "eval_count": ntok}
+            with job.lock:
+                job.stats = stats
+                job.demo = stats.get("source") == "demo"
+                # honest counts: prefer Ollama's eval_count over our timer
+                real = stats.get("eval_count")
+                if isinstance(real, int) and real > 0:
+                    job.tokens_out = real
+                if job.stop_flag.is_set():
+                    job.state = "stopped"
+                else:
+                    job.answer = text
+                    job.state = "done"
+                # append assistant turn to chat history (context memory)
+                if job.chat is not None and job.number not in ("?", ""):
+                    job.chat.add(job.number, "assistant",
+                                 text.strip()[:2000])
+        except Exception as e:
+            job.error = str(e)
+            job.state = "error"
+        finally:
+            job.finished = time.time()
+
+    def active(self):
+        with self._lock:
+            return [j for j in self.jobs if j.state in ("queued", "generating")]
+
+    def result_lines(self):
+        """Finished jobs formatted as: > [model] - [answer] [time] [tokens]"""
+        out = []
+        with self._lock:
+            snapshot = list(self.jobs)
+        for j in snapshot:
+            if j.state == "done" and not getattr(j, "_printed", False):
+                j._printed = True
+                dur = (j.finished - j.started) if j.started and j.finished else 0
+                ans = j.answer.replace("\n", " ").strip()
+                if len(ans) > 400:
+                    ans = ans[:400] + "…"
+                label = f"[{j.number}] {j.model}" if j.number not in ("?", "") else j.model
+                demo_tag = " [DEMO]" if j.demo else ""
+                # honest tok/s: prefer Ollama eval_count/eval_duration
+                st = j.stats or {}
+                real_tps = st.get("real_tps") or 0.0
+                src = st.get("source", "timer")
+                tps_s = f"{real_tps:.1f} tok/s ({src})" if real_tps else \
+                        f"{(j.tokens_out / dur if dur else 0):.1f} tok/s ({src})"
+                out.append(f"> {label}{demo_tag} - {ans} [{dur:.1f}s] "
+                           f"[{j.tokens_out} tok] [{tps_s}]")
+            elif j.state == "error" and not getattr(j, "_printed", False):
+                j._printed = True
+                label = f"[{j.number}] {j.model}" if j.number not in ("?", "") else j.model
+                out.append(f"> {label} - ERROR: {j.error}")
+        return out

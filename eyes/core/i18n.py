@@ -1,4 +1,4 @@
-"""Internationalization (English / Spanish) for STT Pro.
+"""Internationalization (English / Spanish) for ServerCloud.
 
 Usage:
     from eyes.core import i18n
@@ -32,10 +32,12 @@ def detect_lang(argv=None):
 MODE_TEXTS = {
     "en": {
         "q_title": "SELECT OPERATION MODE",
-        "q_line": "What will STT Pro be used for?",
-        "personal": "1 - Personal use   (standard monitor)",
-        "server":   "2 - Server         (+ AI neural-network log chat: /ai_api, ask)",
-        "ask":      "Choose [1/2] (default 1): ",
+        "q_line": "What will ServerCloud be used for?",
+        "personal": "1 - Personal       single device / home network monitoring",
+        "server":   "2 - Server         datacenter/VPS monitoring + AI log analyst (/ai_api, ask)",
+        "ai":       "3 - AI Factory     local LLM token generation on any hardware (Ollama)",
+        "full":     "4 - Full           ALL modules: network monitor + AI factory (industrial)",
+        "ask":      "Choose [1/2/3/4] (default 1): ",
         "chosen_p": "Mode: PERSONAL — standard monitoring.",
         "chosen_s": ("Mode: SERVER — extra commands enabled: "
                      "/ai_api <API-key-or-url>, ask <question>."),
@@ -43,10 +45,12 @@ MODE_TEXTS = {
     },
     "es": {
         "q_title": "ELIGE EL MODO DE OPERACIÓN",
-        "q_line": "¿Para qué se usará STT Pro?",
-        "personal": "1 - Uso personal   (monitor estándar)",
-        "server":   "2 - Servidor       (+ chat de logs con IA: /ai_api, ask)",
-        "ask":      "Elige [1/2] (por defecto 1): ",
+        "q_line": "¿Para qué se usará ServerCloud?",
+        "personal": "1 - Personal       monitoreo de un dispositivo / red doméstica",
+        "server":   "2 - Servidor       monitoreo datacenter/VPS + analista IA (/ai_api, ask)",
+        "ai":       "3 - Fábrica IA     generación local de LLM en cualquier hardware (Ollama)",
+        "full":     "4 - Completo       TODOS los módulos: monitor de red + fábrica IA (industrial)",
+        "ask":      "Elige [1/2/3/4] (por defecto 1): ",
         "chosen_p": "Modo: PERSONAL — monitoreo estándar.",
         "chosen_s": ("Modo: SERVIDOR — comandos extra activados: "
                      "/ai_api <clave-o-url>, ask <pregunta>."),
@@ -65,13 +69,15 @@ def mode_window(lang="en"):
              "╠" + "═" * width + "╣",
              "║ " + t["personal"].ljust(width - 1) + "║",
              "║ " + t["server"].ljust(width - 1) + "║",
+             "║ " + t["ai"].ljust(width - 1) + "║",
+             "║ " + t["full"].ljust(width - 1) + "║",
              "╚" + "═" * width + "╝"]
     return "\n".join(lines), t
 
 
 T = {
     "en": {
-        "title": "STT Pro — Linux network monitor",
+        "title": "ServerCloud — Network monitor + AI factory",
         "started": "Monitor started — live updates every {interval}s.",
         "iface_header": "NETWORK INTERFACES",
         "addresses": "IP addresses",
@@ -151,6 +157,8 @@ T = {
             ("N open-list",      "open the FULL detailed log number N"),
             ("/linfo [N]",       "full info of one log: metadata + entire body"),
             ("back",             "return to the main menu / command window"),
+            ("/mode [name]",     "show/switch operation mode: personal|server|ai|full"),
+            ("/aimode",          "open AI Factory — local LLMs, /w chat, /stf tok/s, /bmc 25GB+"),
             ("/onuwifi [path] <ip>", "send a FILE over the network + transfer log"),
             ("/cleaner",         "block network file send/receive for 5 seconds"),
             ("/blut",            "scan nearby Bluetooth devices ([B] blue logs)"),
@@ -170,7 +178,7 @@ T = {
         ],
     },
     "es": {
-        "title": "STT Pro — Monitor de red para Linux",
+        "title": "ServerCloud — Monitor de red + fábrica IA",
         "started": "Monitor iniciado — actualizaciones cada {interval}s.",
         "iface_header": "INTERFACES DE RED",
         "addresses": "Direcciones IP",
@@ -250,6 +258,8 @@ T = {
             ("N open-list",      "abrir el registro COMPLETO número N"),
             ("/linfo [N]",       "info completa de un registro: metadatos + cuerpo entero"),
             ("back",             "volver al menú principal / ventana de comandos"),
+            ("/mode [nombre]",   "ver/cambiar modo: personal|server|ai|full"),
+            ("/aimode",          "Abrir Fábrica IA — LLM locales, /w chat, /stf tok/s, /bmc 25GB+"),
             ("/onuwifi [ruta] <ip>", "enviar un ARCHIVO por la red + registro"),
             ("/cleaner",         "bloquear envío/recepción de archivos 5 segundos"),
             ("/blut",            "escanear Bluetooth cercano (registros [B] azules)"),

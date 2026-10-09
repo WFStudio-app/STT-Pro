@@ -1,6 +1,17 @@
-# 🛰️ STT Pro
+# 🛰️ ServerCloud
 
 > **EN** · [ES](README.es.md)
+
+## 🧭 Operation Modes (industrial: personal → huge servers)
+
+| # | Mode | For what | Extras |
+|---|------|----------|--------|
+| 1 | **Personal** | single device / home network | standard monitor |
+| 2 | **Server** | datacenter / VPS monitoring | `/ai_api`, `ask` (AI log analyst), auto-clean defaults |
+| 3 | **AI Factory** | local LLM token generation on any hardware (Ollama engine) | `/aimode`: `/models` (71), `/bmc` (25 GB+ giants), `/w` chat, `/stf`, `/autt`, `/dnm`, `/dnmf`, `/delm` |
+| 4 | **Full** | ALL modules at once — industrial deployment | network monitor + AI factory |
+
+Choose at startup or switch live with `/mode [personal|server|ai|full]`; enter the AI factory with `/aimode` (return with `back`). CLI: `python3 net_monitor.py -m full`.
 
 [![Version](https://img.shields.io/badge/version-1.2.0-blue)](#-update-algorithm)
 [![Platform](https://img.shields.io/badge/platform-Linux-FCC624?logo=linux&logoColor=black)]()
@@ -8,7 +19,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Langs](https://img.shields.io/badge/languages-EN%20|%20ES-lightgrey)]()
 
-**STT Pro** is a lightweight terminal network monitor for **Linux**.
+**ServerCloud** is a lightweight terminal network monitor for **Linux**.
 It captures everything about the network your device is connected to — interfaces,
 IP/MAC addresses, DNS, routing table, ARP neighbors, active TCP/UDP connections and
 reachability checks — and stores every snapshot as a **numbered detailed log** right
@@ -108,7 +119,7 @@ Type commands at the `>` prompt.
 
 ```
 ===== LOG #1 | 2026-10-05 14:22:31 | [SUCCESS] =====
-STT Pro v1.2.0 | lang=en
+ServerCloud v1.2.0 | lang=en
 Operating system: Linux, kernel 6.8.0-45-generic
 Hostname: thinkpad
 

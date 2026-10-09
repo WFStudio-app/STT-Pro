@@ -9,6 +9,7 @@ Structure of every snapshot:
 """
 
 import re
+import platform
 import socket
 
 from eyes.analysis import anomalies, baseline, fingerprint
@@ -86,7 +87,8 @@ def build_full_log():
     tr = i18n.TR
     header = [
         f"{tr['title']} v{VERSION} | lang={i18n.LANG}",
-        f"{tr['os_info']}: Linux, kernel {run(['uname', '-r']).strip()}",
+        f"{tr['os_info']}: {platform.system()} {platform.release()}, "
+        f"kernel {run(['uname', '-r']).strip() if not platform.system().startswith('Windows') else 'n/a'}",
         f"{tr['hostname']}: {socket.gethostname()}",
         "",
     ]

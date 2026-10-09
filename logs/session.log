@@ -197,3 +197,899 @@ Network matches learned baseline (no changes)
 ===== LOG #3 [2026-10-07 09:58:51] [OWN] =====
 [BSERVER] ===== COMPANY / LARGE-NETWORK SCAN =====
 [BSERVER] No routable IPv4 subnets found on this host.
+
+===== LOG #1 [2026-10-09 19:40:09] [ERROR] =====
+ServerCloud — Linux network monitor v1.7.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 3 interfaces)
+
+===== LOG #2 [2026-10-09 19:40:09] [ERROR] =====
+ServerCloud — Linux network monitor v1.7.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: 0.0 B/s | TX: 0.0 B/s
+[eth0] RX: 0.01 MB/s | TX: 0.01 MB/s
+[lo] RX: 0.0 B/s | TX: 0.0 B/s
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Network matches learned baseline (no changes)
+
+===== LOG #3 [2026-10-09 19:40:09] [SUCCESS] =====
+[AI] Entering AI Factory mode (ServerCloud-AI engine)
+
+===== LOG #1 [2026-10-09 19:40:13] [ERROR] =====
+ServerCloud — Linux network monitor v1.7.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 3 interfaces)
+
+===== LOG #2 [2026-10-09 19:40:13] [ERROR] =====
+ServerCloud — Linux network monitor v1.7.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: 0.0 B/s | TX: 0.0 B/s
+[eth0] RX: 0.01 MB/s | TX: 0.01 MB/s
+[lo] RX: 0.0 B/s | TX: 0.0 B/s
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Network matches learned baseline (no changes)
+
+===== LOG #3 [2026-10-09 19:40:13] [SUCCESS] =====
+[AI] Entering AI Factory mode (ServerCloud-AI engine)
+
+===== LOG #1 [2026-10-09 19:40:31] [ERROR] =====
+ServerCloud — Linux network monitor v1.7.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 3 interfaces)
+
+===== LOG #1 [2026-10-09 19:41:08] [ERROR] =====
+ServerCloud — Industrial network & AI factory (personal → huge servers) v2.0.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 3 interfaces)
+
+===== LOG #1 [2026-10-09 19:41:08] [ERROR] =====
+ServerCloud — Industrial network & AI factory (personal → huge servers) v2.0.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 3 interfaces)
+
+===== LOG #2 [2026-10-09 19:41:08] [ERROR] =====
+ServerCloud — Industrial network & AI factory (personal → huge servers) v2.0.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: 0.0 B/s | TX: 0.0 B/s
+[eth0] RX: 0.02 MB/s | TX: 0.02 MB/s
+[lo] RX: 0.0 B/s | TX: 0.0 B/s
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Network matches learned baseline (no changes)
+
+===== LOG #1 [2026-10-09 19:41:12] [ERROR] =====
+ServerCloud — Industrial network & AI factory (personal → huge servers) v2.0.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+[BSERVER] ===== COMPANY / LARGE-NETWORK SCAN =====
+[BSERVER] NOTE: no routable IPv4 subnets found on this host
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 4 interfaces)
+
+===== LOG #2 [2026-10-09 19:41:12] [ERROR] =====
+ServerCloud — Industrial network & AI factory (personal → huge servers) v2.0.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: 0.0 B/s | TX: 0.0 B/s
+[eth0] RX: 0.01 MB/s | TX: 0.01 MB/s
+[lo] RX: 0.0 B/s | TX: 0.0 B/s
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+[BSERVER] ===== COMPANY / LARGE-NETWORK SCAN =====
+[BSERVER] NOTE: no routable IPv4 subnets found on this host
+
+### BASELINE COMPARISON
+Network matches learned baseline (no changes)
+
+===== LOG #1 [2026-10-09 19:41:12] [ERROR] =====
+ServerCloud — Red industrial + fábrica IA (de personal a servidores gigantes) v2.0.0 | lang=es
+Sistema operativo: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Nombre del host: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### CAMPOS DETALLADOS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+DISPOSITIVO DE ORIGEN: MAC 2a:d9:55:87:87:91
+SO: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### INTERFACES DE RED
+[dummy0] Estado: INACTIVA | Dirección MAC: 2a:d9:55:87:87:91
+    Direcciones IP: —
+[eth0] Estado: ACTIVA | Dirección MAC: 2a:dc:70:91:9b:1e
+    Direcciones IP: —
+[lo] Estado: INACTIVA | Dirección MAC: 00:00:00:00:00:00
+    Direcciones IP: —
+
+### CONEXIÓN WI-FI
+Wi-Fi information unavailable (no iw / nmcli)
+
+### CONFIGURACIÓN DNS
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### VIGILANCIA DE ORIGEN DNS
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### TABLA DE ENRUTAMIENTO IP
+(no routes output)
+Puerta de enlace predeterminada: ?
+
+### VECINOS ARP
+(ARP table empty / unavailable)
+
+### AUDITORÍA DE PUERTOS EN ESCUCHA
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### CONEXIONES TCP/UDP ACTIVAS
+
+### ANCHO DE BANDA (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / TRÁFICO OCULTO
+No VPN / tunnel indicators found (clean direct connection)
+
+### HUELLA DE SO DEL DISPOSITIVO
+(no ARP neighbors to fingerprint)
+
+### COMPROBACIÓN DE ANOMALÍAS
+No anomalies detected in current traffic pattern
+
+### COMPROBACIÓN DE ALCANCE
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### COMPARACIÓN CON LÍNEA BASE
+Baseline learned from first snapshot (gateway ?, 2 DNS, 3 interfaces)
+
+===== LOG #1 [2026-10-09 19:41:16] [ERROR] =====
+ServerCloud — Network monitor + AI factory v2.0.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: — TX: — (baseline)
+[eth0] RX: — TX: — (baseline)
+[lo] RX: — TX: — (baseline)
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Baseline learned from first snapshot (gateway ?, 2 DNS, 3 interfaces)
+
+===== LOG #2 [2026-10-09 19:41:16] [ERROR] =====
+ServerCloud — Network monitor + AI factory v2.0.0 | lang=en
+Operating system: Linux, kernel 5.10.134-013.15.kangaroo.al8.x86_64
+Hostname: c-6ac942c1-01ed1602-4b6a35a33b42
+
+### DETAIL FIELDS
+DNS: 100.100.2.136, 100.100.2.138
+VPN: NO
+SOURCE DEVICE: MAC 2a:d9:55:87:87:91
+OS: local: Linux 5.10.134-013.15.kangaroo.al8.x86_64
+
+### NETWORK INTERFACES
+[dummy0] State: DOWN | MAC address: 2a:d9:55:87:87:91
+    IP addresses: —
+[eth0] State: UP | MAC address: 2a:dc:70:91:9b:1e
+    IP addresses: —
+[lo] State: DOWN | MAC address: 00:00:00:00:00:00
+    IP addresses: —
+
+### WI-FI CONNECTION
+Wi-Fi information unavailable (no iw / nmcli)
+
+### DNS CONFIGURATION
+nameserver 100.100.2.136
+nameserver 100.100.2.138
+
+### DNS SOURCE WATCH
+DNS server 100.100.2.136: remote resolver | example.com -> (no A record)
+DNS server 100.100.2.138: remote resolver | example.com -> (no A record)
+
+### IP ROUTING TABLE
+(no routes output)
+Default gateway: ?
+
+### ARP NEIGHBORS
+(ARP table empty / unavailable)
+
+### LISTENING PORTS AUDIT
+TCP   127.0.0.1:35951
+TCP   0.0.0.0:35123  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   127.0.0.1:19001
+TCP   0.0.0.0:19005  <-- bound to ALL interfaces (0.0.0.0), review
+TCP   0.0.0.0:19006  <-- bound to ALL interfaces (0.0.0.0), review
+UDP   127.0.0.1:323
+UDP6  00000000000000000000000001000000:323
+
+### ACTIVE TCP/UDP CONNECTIONS
+
+### BANDWIDTH (RX/TX)
+[dummy0] RX: 0.0 B/s | TX: 0.0 B/s
+[eth0] RX: 0.01 MB/s | TX: 0.01 MB/s
+[lo] RX: 0.0 B/s | TX: 0.0 B/s
+
+### VPN / HIDDEN TRAFFIC
+No VPN / tunnel indicators found (clean direct connection)
+
+### DEVICE OS FINGERPRINT
+(no ARP neighbors to fingerprint)
+
+### ANOMALY CHECK
+No anomalies detected in current traffic pattern
+
+### REACHABILITY CHECK
+ping 8.8.8.8: FAIL (unreachable / blocked) (received=0/3, avg RTT=? ms)
+
+### BASELINE COMPARISON
+Network matches learned baseline (no changes)

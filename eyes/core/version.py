@@ -1,4 +1,4 @@
-"""Version & update algorithm for STT Pro.
+"""Version & update algorithm for ServerCloud.
 
 Update scheme (SemVer-like):
     MAJOR.MINOR.PATCH  (X.X.X)
@@ -7,8 +7,8 @@ Update scheme (SemVer-like):
       0.0.X  -> Mini update          (fixes, small improvements)
 """
 
-VERSION_MAJOR = 1   # X.0.0 — Global update
-VERSION_MINOR = 7   # 0.X.0 — Major feature update
+VERSION_MAJOR = 2   # X.0.0 — Global update
+VERSION_MINOR = 0   # 0.X.0 — Major feature update
 VERSION_PATCH = 0   # 0.0.X — Mini update (patch)
 
 VERSION = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"

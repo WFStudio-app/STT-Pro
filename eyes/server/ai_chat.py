@@ -63,7 +63,7 @@ def ask_ai(base_url, api_key, store, question, model=DEFAULT_MODEL):
         "model": model,
         "messages": [
             {"role": "system", "content":
-                "You are the built-in analyst of 'STT Pro', a Linux "
+                "You are the built-in analyst of 'ServerCloud', a Linux "
                 "network monitor. You are shown the most recent numbered logs "
                 "(categories: SUCCESS, SUSPICIOUS, BLOCKED/FAILED, MASKED, "
                 "OWN NETWORK, BLUETOOTH). Answer concisely, reference log "

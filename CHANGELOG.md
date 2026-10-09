@@ -1,13 +1,13 @@
-# Changelog — STT Pro
+# Changelog — ServerCloud
 
 Versioning scheme: `X.X.X`
 - **X.0.0** — Global update (major rewrite, breaking changes)
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
 
-## [1.6.3] — 2026-10-07 — 🔧 Mini update (rename to STT Pro)
+## [1.6.3] — 2026-10-07 — 🔧 Mini update (rename to ServerCloud)
 ### Changed
-- **Project renamed** from "Eyes of the Network" to **STT Pro** (server-oriented tool):
+- **Project renamed** from "Eyes of the Network" to **ServerCloud** (server-oriented tool):
   repo, README headers, banners, i18n strings, docs, examples and tests updated
 ### Fixed
 - Log header line `===== LOG #N ... =====` was self-classified as ERROR when a
@@ -71,3 +71,23 @@ Versioning scheme: `X.X.X`
 ## [1.2.0] — Startup command window, live updates (/updtime), IP filter (/setip), color-coded categories
 ## [1.1.0] — Port to Linux, EN/ES i18n, SemVer update algorithm X.X.X
 ## [1.0.0] — Initial release: numbered detailed logs, `N open-list`
+
+## [2.0.0] — Global update 🌋 ServerCloud (STT-Pro + TokenPFS merged)
+
+**Renamed & merged:** STT Pro and TokenPFS are now ONE program — **ServerCloud**, industrial software for servers from small to huge.
+
+### Operation modes (startup window or `/mode`)
+1. **Personal** — single device / home network monitoring
+2. **Server** — datacenter/VPS monitoring + AI log analyst (`/ai_api`, `ask`), auto-clean defaults
+3. **AI Factory** — local LLM token generation on any hardware (Ollama engine): 71-model catalog, `/bmc` giants 25 GB+, chat with context `/w`, `/stf`, `/autt`, `/dnm`, `/dnmf`, `/delm`
+4. **Full** — all modules at once (network monitor + AI factory)
+
+### New commands
+- `/mode [personal|server|ai|full]` — show/switch operation mode live
+- `/aimode` — enter the embedded AI Factory; `back` returns to the main menu
+- CLI: `python3 net_monitor.py -m full`
+- AI extras (`/ai_api`, `ask`) now available in both Server and Full modes
+
+### Cross-platform
+- Log header OS line uses `platform.system()` (Linux/macOS/Windows) instead of hardcoded "Linux"
+
