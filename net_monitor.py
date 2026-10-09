@@ -67,6 +67,7 @@ from eyes.modules.transmitter import send_file               # noqa: E402
 from eyes.modules.cleaner import run_cleaner                 # noqa: E402
 from eyes.modules.blut import scan_bluetooth                 # noqa: E402
 from eyes.modules.gscan import scan_networks                 # noqa: E402
+from eyes.modules import nmap as nmap_mod                    # noqa: E402
 from eyes.output.exporter import export_csv, export_html, export_json  # noqa: E402
 from eyes.output.rotate import rotate_if_needed               # noqa: E402
 from eyes.output.stats import session_stats                   # noqa: E402
@@ -89,9 +90,84 @@ AI = {"base": None, "key": ""}
 HELP_FALLBACK = ("Commands: scan | list | N open-list | /linfo [N] | back | /mode [personal|server|ai|full] | /aimode "
                  "| /updtime [sec] | /setip [ip|cidr] | /onuwifi <file> <ip> "
                  "| /cleaner | /blut | /g | /bserver [on|off] | /logd [N] "
+                 "| /nmap list|show <key>|run <key> <target>|timeout <sec> "
                  "| stats | export json|csv|html "
                  "| search <text> | config | version | clear | banner "
                  "| help | quit")
+
+NMAP_TIMEOUT = {"sec": 600}
+
+
+def cmd_nmap(parts, add_log_func):
+    """/nmap — industrial scanning assistant (curated nmap recipes)."""
+    sub = parts[1].lower() if len(parts) > 1 else "list"
+    if sub == "list":
+        for kind, line in nmap_mod.list_lines():
+            color = {"cat": C.CYAN, "item": C.GREEN, "note": C.DIM}[kind]
+            print(paint(line, color))
+        if not nmap_mod.available():
+            print(paint("⚠ nmap binary NOT found on this host — install it "
+                        "first (apt/dnf/brew install nmap).", C.YELLOW))
+    elif sub == "show":
+        if len(parts) < 3 or parts[2].lower() not in nmap_mod.BY_KEY:
+            print(paint(f"Usage: /nmap show <key>  (keys: "
+                        f"{', '.join(nmap_mod.BY_KEY)})", C.RED))
+        else:
+            r = nmap_mod.BY_KEY[parts[2].lower()]
+            print(paint(f"[{r.key}] {r.title}  ({r.category})", C.CYAN))
+            print(paint("  " + " ".join(r.args), C.GREEN))
+            if r.needs_root:
+                print(paint("  requires sudo/root", C.YELLOW))
+            if r.note:
+                print(paint(f"  ↳ {r.note}", C.DIM))
+    elif sub == "timeout":
+        try:
+            v = int(parts[2])
+            if v <= 0:
+                raise ValueError
+            NMAP_TIMEOUT["sec"] = v
+            print(paint(f"Nmap scan timeout set to {v}s.", C.GREEN))
+        except (IndexError, ValueError):
+            print(paint(f"Usage: /nmap timeout <sec> (current: "
+                        f"{NMAP_TIMEOUT['sec']}s)", C.RED))
+    elif sub == "run":
+        if len(parts) < 4:
+            print(paint("Usage: /nmap run <key> <target>  "
+                        "(e.g. /nmap run default 192.168.1.10)", C.RED))
+            return
+        key, target = parts[2].lower(), " ".join(parts[3:])
+        if key not in nmap_mod.BY_KEY:
+            print(paint(f"Unknown recipe '{key}'. Use /nmap list.", C.RED))
+            return
+        r = nmap_mod.BY_KEY[key]
+        cmdline = " ".join(r.build(target))
+        print(paint(f"[NMAP] starting: {cmdline} (timeout "
+                    f"{NMAP_TIMEOUT['sec']}s)…", C.CYAN))
+        code, lines = nmap_mod.run(key, target, NMAP_TIMEOUT["sec"])
+        body = "\n".join(lines) if lines else "(no output)"
+        status = "OK" if code == 0 else f"exit={code}"
+        log_text = (f"===== NMAP SCAN [{key}] =====\n"
+                    f"Command: {cmdline}\n"
+                    f"Target: {target}\n"
+                    f"Status: {status}\n\n{body}")
+        n = add_log_func(log_text)
+        for ln in lines[:60]:
+            print(ln)
+        if len(lines) > 60:
+            print(paint(f"… ({len(lines) - 60} more lines — see log #{n})", C.DIM))
+        if code == 0:
+            print(paint(f"[NMAP] Scan finished OK → log #{n}", C.GREEN))
+        elif code == 127:
+            print(paint("[NMAP] nmap not installed → log marked ERROR", C.RED))
+        elif code == 124:
+            print(paint(f"[NMAP] aborted after {NMAP_TIMEOUT['sec']}s "
+                        f"(raise with /nmap timeout <sec>)", C.ORANGE))
+        else:
+            print(paint(f"[NMAP] finished with exit={code} → log #{n}", C.RED))
+    else:
+        print(paint("Usage: /nmap list | show <key> | run <key> <target> "
+                    "| timeout <sec>", C.RED))
+
 
 
 def set_bserver(active):
@@ -496,6 +572,8 @@ def main():
                         print(paint(TR["filter_off"], C.PURPLE))
                     else:
                         print(paint(f"{TR['filter_on']}: {IP_FILTER['nets'][0]}", C.GREEN))
+        elif cmd == "/nmap":
+            cmd_nmap(parts, add_log)
         else:
             m = re.match(r"^(\d+)\s+open-list$", low)
             if m:

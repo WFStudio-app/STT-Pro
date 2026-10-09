@@ -102,6 +102,9 @@ segundo** automáticamente. Usa `/updtime 5` para reducir la frecuencia o
 | `/cleaner` | bloquear envío/recepción de archivos en red durante 5 segundos |
 | `/blut` | escanear dispositivos Bluetooth cercanos (registros `[B]` azules) |
 | `/g` | escanear redes cercanas y listar destinos accesibles |
+| `/nmap list` | asistente nmap industrial — 23 recetas (descubrimiento, SYN/UDP/ACK, puertos, `-sV/-O/-A`, `--script vuln`, auditoría TLS/SSH/FTP/web, `-T4`, `-iL/--exclude`, `-oA`, ndiff) |
+| `/nmap run <clave> <objetivo>` | ejecutar una receta, ej. `/nmap run default 192.168.1.10`; resultado completo se guarda como registro numerado |
+| `/nmap show <clave>` / `/nmap timeout <seg>` | ver una receta / ajustar watchdog de escaneo (def. 600s) |
 | `/logd [N]` | borrar los registros viejos de memoria tras cada N guardados (def. 50, 0=no) |
 | `/ai_api [API]` | modo SERVIDOR: clave/url de la red neuronal para chatear con los logs |
 | `ask <pregunta>` | modo SERVIDOR: la IA analiza los últimos 50 registros y responde |

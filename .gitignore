@@ -3,10 +3,8 @@ __pycache__/
 *.pyc
 
 # Logs and temp files
-logs/
-*.lognode_modules/
+logs/node_modules/
 .next/
 dist/
 build/
 *.log
-node_modules/

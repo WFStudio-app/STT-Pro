@@ -102,6 +102,9 @@ Type commands at the `>` prompt.
 | `/cleaner` | block network file send/receive for 5 seconds (logged as BLOCKED) |
 | `/blut` | scan nearby Bluetooth devices — every line prefixed blue `[B]` |
 | `/g` | scan surrounding networks & list reachable targets for requests |
+| `/nmap list` | industrial nmap assistant — 23 curated recipes (discovery, SYN/UDP/ACK, ports, `-sV/-O/-A`, `--script vuln`, TLS/SSH/FTP/web audits, `-T4`, `-iL/--exclude`, `-oA`, ndiff) |
+| `/nmap run <key> <target>` | execute a recipe, e.g. `/nmap run default 192.168.1.10`; full result saved as a numbered log |
+| `/nmap show <key>` / `/nmap timeout <sec>` | inspect one recipe / set per-scan watchdog (default 600s) |
 | `/logd [N]` | delete oldest in-memory logs after every N stored (default 50, 0=off) |
 | `/ai_api [API]` | SERVER mode: set the neural-network API key/url for the log chat |
 | `ask <question>` | SERVER mode: AI analyzes the last 50 logs and answers |

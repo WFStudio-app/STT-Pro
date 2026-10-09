@@ -5,6 +5,26 @@ Versioning scheme: `X.X.X`
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
 
+## [2.1.0] — 2026-10-09 — 🚀 Major update (industrial nmap assistant)
+### Added
+- **`eyes/modules/nmap.py`** — curated catalogue of **23 industrial nmap recipes**
+  grouped by category: discovery (`-sn`, `-Pn`), scan types (`-sS`, `-sT`,
+  `-sU --top-ports 20`, `-sA`), ports (`-p 22,80,443`, `-p-`, `--top-ports 100`),
+  detection (`-sV`, `-O`, `-A`, `--open --reason`, `--traceroute`),
+  scripts (`-sC`, `--script vuln`), service audits (web `http-title,http-headers`,
+  `ssh-auth-methods`, `ftp-anon`, `ssl-enum-ciphers`), timing (`-T4` + `-T2` hint),
+  targets (`-iL servers.txt --exclude ...`), output (`-oA report`) and the
+  `ndiff old.xml new.xml` comparison note
+- **New command `/nmap`**:
+  - `/nmap list` — pretty grouped listing with sudo markers & safety notes
+  - `/nmap show <key>` — one recipe in detail
+  - `/nmap run <key> <target>` — execute it; full result saved as numbered log
+    (green OK / red ERROR / orange timeout), first 60 lines echoed to terminal
+  - `/nmap timeout <sec>` — per-scan watchdog (default 600s)
+- Recipes marked `[sudo]` where root is required; intrusive ones (`vuln`, `-A`)
+  carry authorization warnings — browsing never touches the network
+- Banner & help updated (EN/ES)
+
 ## [1.6.3] — 2026-10-07 — 🔧 Mini update (rename to ServerCloud)
 ### Changed
 - **Project renamed** from "Eyes of the Network" to **ServerCloud** (server-oriented tool):
