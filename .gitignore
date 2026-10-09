@@ -1,6 +1,5 @@
-(empty)node_modules/
+TokenPFSnode_modules/
 .next/
 dist/
 build/
 *.log
-node_modules/
