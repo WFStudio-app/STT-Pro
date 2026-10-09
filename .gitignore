@@ -3,3 +3,4 @@ TokenPFSnode_modules/
 dist/
 build/
 *.log
+node_modules/
