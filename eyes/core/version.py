@@ -8,10 +8,11 @@ Update scheme (SemVer-like):
 """
 
 VERSION_MAJOR = 2   # X.0.0 — Global update
-VERSION_MINOR = 1   # 0.X.0 — Major feature update
+VERSION_MINOR = 0   # 0.X.0 — Major feature update
 VERSION_PATCH = 0   # 0.0.X — Mini update (patch)
+VERSION_SUFFIX = "-Beta-2"
 
-VERSION = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
+VERSION = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}{VERSION_SUFFIX}"
 
 UPDATE_ALGORITHM = """
 Update algorithm:

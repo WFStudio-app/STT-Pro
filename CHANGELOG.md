@@ -5,6 +5,37 @@ Versioning scheme: `X.X.X`
 - **0.X.0** — Major update (new features, backward compatible)
 - **0.0.X** — Mini update (fixes, small improvements)
 
+## [2.0.0-Beta-2] — 2026-10-10 — 🚀 Beta release (unified ServerCloud)
+
+The first **beta** of the unified ServerCloud: STT-Pro (network monitoring) and
+TokenPFS (local AI token factory) merged into one program with operation modes
+(personal / server / ai / full), industrial nmap assistant, chat context &
+generation options for AI models, cross-platform installers (Linux / Termux /
+Windows / macOS / VPS).
+
+### Added
+- **Operation modes** (`/mode personal|server|ai|full`) — startup chooser + runtime switch
+- **`eyes/modules/nmap.py`** — curated catalogue of **23 industrial nmap recipes**
+  grouped by category: discovery (`-sn`, `-Pn`), scan types (`-sS`, `-sT`,
+  `-sU --top-ports 20`, `-sA`), ports (`-p 22,80,443`, `-p-`, `--top-ports 100`),
+  detection (`-sV`, `-O`, `-A`, `--open --reason`, `--traceroute`),
+  scripts (`-sC`, `--script vuln`), service audits (web `http-title,http-headers`,
+  `ssh-auth-methods`, `ftp-anon`, `ssl-enum-ciphers`), timing (`-T4` + `-T2` hint),
+  targets (`-iL servers.txt --exclude ...`), output (`-oA report`) and the
+  `ndiff old.xml new.xml` comparison note
+- **Command `/nmap`**: `/nmap list` · `/nmap show <key>` ·
+  `/nmap run <key> <target>` (result saved as numbered log) · `/nmap timeout <sec>`
+- **AI layer (ex-TokenPFS)**: 71-model catalog incl. giants >=25 GB (`/bmc`),
+  chat context per model (`/w` history + `/clear`), system prompt (`/sys`),
+  generation options (`/opt`: temperature, top_p, max_tokens, num_ctx, seed),
+  honest metrics from Ollama eval_count/eval_duration, visible `[DEMO]` label,
+  hardware power measurement `/autt`, custom models `/dnm` `/dnmf` `/delm`
+- **Monitoring layer (ex-STT-Pro)**: colored numbered logs, `/updtime`, `/setip`,
+  `/bserver` extended company mode (auto-clean 250), `/linfo`, `search`,
+  `export json|csv|html`, `stats`, AI-chat integration in server mode (`/ai_api`)
+- Cross-platform installers: `scripts/install.sh` (Linux/Termux/macOS/VPS),
+  `scripts/install.ps1` (Windows)
+
 ## [2.1.0] — 2026-10-09 — 🚀 Major update (industrial nmap assistant)
 ### Added
 - **`eyes/modules/nmap.py`** — curated catalogue of **23 industrial nmap recipes**

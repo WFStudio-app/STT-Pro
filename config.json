@@ -1,0 +1,11 @@
+{
+  "lang": null,
+  "mode": "full",
+  "updtime": 1.0,
+  "setip": "",
+  "logd": 250,
+  "ai_api": "",
+  "bw_warn_mbps": 10,
+  "logd_prev": 250,
+  "bserver": true
+}

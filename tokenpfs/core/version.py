@@ -7,9 +7,9 @@ Versioning algorithm (X.X.X / SemVer):
 """
 
 VERSION_MAJOR = 2
-VERSION_MINOR = 1
-VERSION_PATCH = 1
-VERSION_SUFFIX = "-alpha"
+VERSION_MINOR = 0   # 0.X.0 — Major feature update
+VERSION_PATCH = 0
+VERSION_SUFFIX = "-Beta-2"
 
 APP_NAME = "ServerCloud-AI"
 
